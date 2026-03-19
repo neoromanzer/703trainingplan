@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alvaro — 70.3 Complete Training Plan</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a18; padding: 1.5rem; }
+  h1 { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+  .race-banner { background: #FAEEDA; border-radius: 10px; padding: 10px 16px; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+  .race-banner strong { font-weight: 500; font-size: 14px; color: #BA7517; }
+  .race-banner span { font-size: 12px; color: #BA7517; opacity: 0.85; }
+  .block-nav { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .blk-btn { font-size: 11px; padding: 5px 13px; border-radius: 20px; border: 1px solid #ccc; background: transparent; color: #555; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .blk-btn.active { background: #dbeafe; color: #1e40af; border-color: transparent; font-weight: 500; }
+  .blk-btn.peak.active { background: #fee2e2; color: #991b1b; }
+  .blk-btn.peak { border-color: #f87171; color: #b91c1c; }
+  .blk-btn.taper.active { background: #fef3c7; color: #92400e; }
+  .blk-btn.taper { border-color: #fbbf24; color: #b45309; }
+  .week-nav { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .wk-btn { font-size: 11px; padding: 4px 11px; border-radius: 20px; border: 1px solid #ccc; background: transparent; color: #555; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .wk-btn.active { background: #e5e5e0; color: #111; border-color: #999; font-weight: 500; }
+  .wk-btn.recovery { border-style: dashed; }
+  .wk-btn.rehearsal { border-color: #ea580c; color: #c2410c; }
+  .wk-btn.raceweek { background: #fef3c7; color: #92400e; border-color: transparent; font-weight: 500; }
+  .vol-row { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .vol-pill { font-size: 11px; display: flex; align-items: center; gap: 5px; background: #ececea; border-radius: 20px; padding: 3px 10px; color: #555; }
+  .vol-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; margin-bottom: 1rem; }
+  .day-card { border-radius: 8px; border: 1px solid #e0deda; padding: 9px; min-height: 128px; background: #fff; }
+  .day-card.rest { background: #f5f4f0; }
+  .day-card.done { background: #f5f4f0; opacity: 0.75; }
+  .day-card.today { border: 2px solid #93c5fd; }
+  .day-card.race-day { border: 2px solid #fbbf24; background: #fef9ee; }
+  .day-name { font-size: 10px; font-weight: 600; color: #888; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .day-type { font-size: 11px; font-weight: 500; color: #111; margin-bottom: 3px; line-height: 1.4; }
+  .day-detail { font-size: 10px; color: #666; line-height: 1.55; }
+  .tag { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 3px; margin-bottom: 4px; font-weight: 600; }
+  .tag-bike { background: #dbeafe; color: #1d4ed8; }
+  .tag-run { background: #fee2e2; color: #b91c1c; }
+  .tag-swim { background: #d1fae5; color: #065f46; }
+  .tag-brick { background: #ede9fe; color: #5b21b6; }
+  .tag-rest { background: #f3f4f6; color: #6b7280; }
+  .tag-race { background: #fef3c7; color: #92400e; }
+  .tag-done { background: #d1fae5; color: #065f46; }
+  .block-desc { font-size: 11px; color: #555; background: #ececea; border-radius: 8px; padding: 9px 12px; margin-bottom: 1rem; line-height: 1.6; }
+  .block-desc strong { color: #111; font-weight: 500; }
+  @media (max-width: 800px) { .days-grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 500px) { .days-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<div class="race-banner">
+  <strong>70.3 — December 2026</strong>
+  <span>38 weeks · 7 blocks · Swim 1.9k · Bike 90k · Run 21.1k</span>
+</div>
+
+<div class="block-nav" id="block-nav"></div>
+<div id="block-desc-area"></div>
+<div class="week-nav" id="week-nav"></div>
+<div class="vol-row" id="vol-row"></div>
+<div id="week-display"></div>
+
+<script>
+const T = { bike:'tag-bike', run:'tag-run', swim:'tag-swim', brick:'tag-brick', rest:'tag-rest', race:'tag-race', done:'tag-done' };
+
+const ALL = [
+  { num:1, label:'B1 — Base 1', btnCls:'', dates:'Mar 17 – Apr 13',
+    desc:'<strong>Block 1 — Base 1 (Mar 17 – Apr 13):</strong> Thailand. Spinning bike + Zwift treadmill + 25m pool. All three disciplines introduced. Run/walk at 2:2. Swim builds 1,500m→2,000m. Saturday long bike 75–90 min. Ends with 20 min bike test.',
+    weeks:[
+      { label:'W1', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h 20m'},{c:'#E24B4A',l:'Run ~50m'},{c:'#1A9E75',l:'Swim ~3,000m'}], days:[
+        {d:'Mon 16',t:'rest',tl:'Rest',ty:'Rest',de:'Nothing logged.',cl:'rest'},
+        {d:'Tue 17',t:'done',tl:'✓ Done',ty:'Zwift run 25 min',de:'2.6 km easy Z2 run. Done.',cl:'done'},
+        {d:'Wed 18',t:'bike',tl:'Bike — Z2',ty:'45 min spin',de:'Pure aerobic Z2. Cadence 85–90 rpm. Conversational throughout.',cl:'today'},
+        {d:'Thu 19',t:'swim',tl:'Swim',ty:'1,500 m',de:'300m easy → 6×150m Z2 (20s rest) → 300m cool-down.'},
+        {d:'Fri 20',t:'bike',tl:'Bike — Intervals',ty:'45 min spin',de:'10 min Z2 → 3×(3 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Sat 21',t:'swim',tl:'Swim',ty:'1,500 m',de:'400m easy → 5×100m hard (15s rest) → 400m Z2 → 200m cool-down.'},
+        {d:'Sun 22',t:'bike',tl:'Bike — Long Z2',ty:'75–90 min spin',de:'Long aerobic ride. Z2 only.'},
+      ]},
+      { label:'W2', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h 45m'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,600m'}], days:[
+        {d:'Mon 23',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'2 min run / 2 min walk × 5. Easy Z2.'},
+        {d:'Tue 24',t:'bike',tl:'Bike — Z2',ty:'50 min spin',de:'5 min longer than W1. Aerobic base.'},
+        {d:'Wed 25',t:'swim',tl:'Swim',ty:'1,800 m',de:'400m warm-up → 8×100m Z2 (20s rest) → 600m steady → 200m cool-down.'},
+        {d:'Thu 26',t:'bike',tl:'Bike — Threshold',ty:'50 min spin',de:'10 min Z2 → 2×(8 min Z4 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Fri 27',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'3 min run / 2 min walk × 5. Easy effort.'},
+        {d:'Sat 28',t:'swim',tl:'Swim',ty:'1,800 m',de:'600m easy → 4×200m at pace (25s rest) → 400m cool-down.'},
+        {d:'Sun 29',t:'bike',tl:'Bike — Long Z2',ty:'90–100 min spin',de:'Longer long ride. Z2 only.'},
+      ]},
+      { label:'W3', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h 05m'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,700m'}], days:[
+        {d:'Mon 30',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'3 min run / 2 min walk × 4. Load week — stay conservative.'},
+        {d:'Tue 1 Apr',t:'bike',tl:'Bike — Z2',ty:'55 min spin',de:'Aerobic base. Keep effort controlled — need legs for Saturday brick.'},
+        {d:'Wed 2',t:'swim',tl:'Swim — hard',ty:'2,000 m',de:'400m warm-up → 8×100m hard (15s rest) → 4×100m Z2 → 200m cool-down.'},
+        {d:'Thu 3',t:'bike',tl:'Bike — VO2',ty:'50 min spin',de:'10 min Z2 → 5×(2 min Z5 + 3 min Z1) → 10 min Z2.'},
+        {d:'Fri 4',t:'swim',tl:'Swim — easy',ty:'1,500 m',de:'All Z2. Hard week — flush, don\'t load.'},
+        {d:'Sat 5',t:'brick',tl:'Brick',ty:'75 min bike + 15 min run',de:'75 min Z2 spin → treadmill → 2 min run / 2 min walk × 3 + 3 min easy.'},
+        {d:'Sun 6',t:'run',tl:'Run/walk',ty:'20 min treadmill',de:'2 min run / 2 min walk × 4. Easy Z1 recovery.'},
+      ]},
+      { label:'W4 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~1h 50m'},{c:'#E24B4A',l:'Run ~30m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+        {d:'Mon 7',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
+        {d:'Tue 8',t:'bike',tl:'Bike — easy',ty:'35 min spin',de:'Short easy Z2.'},
+        {d:'Wed 9',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
+        {d:'Thu 10',t:'bike',tl:'Bike — tempo',ty:'40 min spin',de:'10 min Z2 → 2×(5 min Z3 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Fri 11',t:'run',tl:'Run/walk',ty:'15 min treadmill',de:'2 min run / 2 min walk × 3.'},
+        {d:'Sat 12',t:'bike',tl:'Bike — TEST',ty:'20 min max effort',de:'10 min Z2 → 20 min maximal effort → cool-down. Baseline for Block 2.'},
+        {d:'Sun 13',t:'swim',tl:'Swim',ty:'1,000 m',de:'Easy Z2. Note pace vs W1.'},
+      ]},
+    ]
+  },
+  { num:2, label:'B2 — Base 2', btnCls:'', dates:'Apr 14 – May 10',
+    desc:'<strong>Block 2 — Base 2 (Apr 14 – May 10):</strong> Abu Dhabi. Outdoor riding on Eulogia replaces spinning on Saturdays. Zwift for runs. Pool for swims. Run/walk progresses to 3:2. Long bike pushes to 2h. First proper brick.',
+    weeks:[
+      { label:'W5', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,600m'}], days:[
+        {d:'Mon',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'3 min run / 2 min walk × 4. First 3:2 session. Easy Z2.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'50 min Zwift',de:'Pure aerobic. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'1,800 m',de:'400m warm-up → 8×100m Z2 (20s rest) → 600m → 200m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'50 min Zwift',de:'10 min Z2 → 2×(8 min Z4 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'1,800 m',de:'600m easy → 4×200m at pace (25s rest) → 400m cool-down.'},
+        {d:'Sat',t:'bike',tl:'Bike — Long Z2',ty:'2h outdoor/Zwift',de:'First 2h ride. Z2 only. Outdoors on Eulogia if back in Abu Dhabi.'},
+        {d:'Sun',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'3 min run / 2 min walk × 4. Easy Z2.'},
+      ]},
+      { label:'W6', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3.5h'},{c:'#E24B4A',l:'Run ~1h'},{c:'#1A9E75',l:'Swim ~3,800m'}], days:[
+        {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'3 min run / 2 min walk × 5. Easy Z2.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'55 min Zwift',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m warm-up → 10×100m Z2 (20s rest) → 400m → 200m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'55 min Zwift',de:'10 min Z2 → 4×(3 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'1,800 m',de:'300m easy → 6×200m at pace (25s rest) → 300m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'90 min bike + 20 min run',de:'90 min Z2 outdoor → treadmill → 3 min run / 2 min walk × 4.'},
+        {d:'Sun',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'3 min run / 2 min walk × 4. Easy Z1–Z2.'},
+      ]},
+      { label:'W7', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 5m'},{c:'#1A9E75',l:'Swim ~4,200m'}], days:[
+        {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'3 min run / 2 min walk × 5. Load week — stay conservative.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'60 min Zwift',de:'First full hour ride. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim — hard',ty:'2,200 m',de:'400m warm-up → 10×100m hard (15s rest) → 600m Z2 → 200m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'55 min Zwift',de:'10 min Z2 → 5×(2 min Z5 + 3 min Z1) → 15 min Z2.'},
+        {d:'Fri',t:'swim',tl:'Swim — easy',ty:'1,800 m',de:'All Z2. Hard week — flush.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'2h bike + 20 min run',de:'2h Z2 outdoor → treadmill → 3 min run / 2 min walk × 4.'},
+        {d:'Sun',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'Easy Z1 recovery. 2 min run / 2 min walk × 5.'},
+      ]},
+      { label:'W8 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~35m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+        {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
+        {d:'Tue',t:'bike',tl:'Bike — easy',ty:'40 min Zwift',de:'Short easy Z2.'},
+        {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
+        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'45 min Zwift',de:'10 min Z2 → 2×(6 min Z3 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'run',tl:'Run/walk',ty:'15 min treadmill',de:'2 min run / 2 min walk × 3.'},
+        {d:'Sat',t:'bike',tl:'Bike — TEST',ty:'20 min max effort',de:'10 min Z2 → 20 min maximal effort → cool-down. Compare to Block 1.'},
+        {d:'Sun',t:'swim',tl:'Swim',ty:'1,000 m',de:'Easy Z2. Note pace vs W5.'},
+      ]},
+    ]
+  },
+  { num:3, label:'B3 — Build 1', btnCls:'', dates:'May 11 – Jun 7',
+    desc:'<strong>Block 3 — Build 1 (May 11 – Jun 7):</strong> First real volume block. Run/walk moves to 4:2. Long bike hits 2.5–3h outdoors. Swim grows to 2,500m. Brick is now a weekly fixture. Weekly volume ~7–8h.',
+    weeks:[
+      { label:'W9', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 10m'},{c:'#1A9E75',l:'Swim ~4,000m'}], days:[
+        {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'4 min run / 2 min walk × 4. First 4:2 session. Easy Z2.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'60 min outdoor',de:'Pure aerobic hour. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,200 m',de:'400m warm-up → 10×100m Z2 (20s rest) → 600m → 200m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'60 min outdoor',de:'15 min Z2 → 2×(10 min Z4 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'1,800 m',de:'300m easy → 6×200m at pace (25s rest) → 300m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'2h bike + 25 min run',de:'2h Z2 outdoor → treadmill → 4 min run / 2 min walk × 4.'},
+        {d:'Sun',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'4 min run / 2 min walk × 4. Easy Z2.'},
+      ]},
+      { label:'W10', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4.5h'},{c:'#E24B4A',l:'Run ~1h 15m'},{c:'#1A9E75',l:'Swim ~4,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run/walk',ty:'35 min treadmill',de:'4 min run / 2 min walk × 5. Easy Z2.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'65 min outdoor',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×100m hard (15s rest) → 5×100m Z2 → 500m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'60 min outdoor',de:'10 min Z2 → 5×(3 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m easy → 8×150m at pace (20s rest) → 400m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 25 min run',de:'2.5h Z2 outdoor → treadmill → 4 min run / 2 min walk × 4.'},
+        {d:'Sun',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'4 min run / 2 min walk × 4. Easy Z2.'},
+      ]},
+      { label:'W11', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~4,800m'}], days:[
+        {d:'Mon',t:'run',tl:'Run/walk',ty:'35 min treadmill',de:'4 min run / 2 min walk × 5. Load week — stay controlled.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'70 min outdoor',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim — hard',ty:'2,500 m',de:'500m warm-up → 12×100m hard (15s rest, target sub-2.0) → 400m Z2 → 100m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'60 min Zwift',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 15 min Z2.'},
+        {d:'Fri',t:'swim',tl:'Swim — easy',ty:'2,000 m',de:'All Z2. Flush and recover.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 30 min run',de:'2.5h Z2 outdoor → treadmill → 4 min run / 2 min walk × 5.'},
+        {d:'Sun',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'Easy Z1–Z2. 3 min run / 2 min walk × 5.'},
+      ]},
+      { label:'W12 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~35m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+        {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
+        {d:'Tue',t:'bike',tl:'Bike — easy',ty:'40 min Zwift',de:'Easy Z2.'},
+        {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique focus.'},
+        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'45 min Zwift',de:'10 min Z2 → 2×(6 min Z3 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'run',tl:'Run/walk',ty:'15 min treadmill',de:'2 min run / 2 min walk × 3.'},
+        {d:'Sat',t:'bike',tl:'Bike — TEST',ty:'20 min max effort',de:'10 min Z2 → 20 min maximal effort → cool-down. Third test.'},
+        {d:'Sun',t:'swim',tl:'Swim',ty:'1,000 m',de:'Easy Z2. Close out the block.'},
+      ]},
+    ]
+  },
+  { num:4, label:'B4 — Build 2', btnCls:'', dates:'Jun 8 – Jul 5',
+    desc:'<strong>Block 4 — Build 2 (Jun 8 – Jul 5):</strong> Run transitions to continuous Z2 — the key milestone of the plan. Long bike reaches 3h+. Swim adds sighting drills. Weekly volume ~8–9h.',
+    weeks:[
+      { label:'W13', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — continuous',ty:'25 min treadmill',de:'First fully continuous run. Easy Z2. Slow if needed. Key milestone of the plan.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'70 min outdoor',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×150m at pace (20s rest) → 500m cool-down. Sight every 10 strokes.'},
+        {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'65 min outdoor',de:'15 min Z2 → 3×(8 min Z4 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m easy → 5×300m at pace (30s rest) → 500m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 30 min run',de:'2.5h Z2 outdoor → treadmill → 25 min continuous Z2 + 5 min walk.'},
+        {d:'Sun',t:'run',tl:'Run — continuous',ty:'30 min treadmill',de:'Easy continuous Z2. No walk breaks.'},
+      ]},
+      { label:'W14', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5.5h'},{c:'#E24B4A',l:'Run ~1h 30m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — continuous',ty:'30 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'75 min outdoor',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at pace (30s rest) → 500m cool-down. Sight practice.'},
+        {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'65 min outdoor',de:'10 min Z2 → 6×(3 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m easy → 10×150m hard (20s rest) → 500m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 30 min run',de:'3h Z2 outdoor → treadmill → 25 min continuous Z2 + 5 min walk. First 3h ride.'},
+        {d:'Sun',t:'run',tl:'Run — continuous',ty:'35 min treadmill',de:'Easy continuous Z2. Longest standalone run so far.'},
+      ]},
+      { label:'W15', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run ~1h 35m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — continuous',ty:'30 min treadmill',de:'Easy Z2. Load week — keep running conservative.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'80 min outdoor',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim — hard',ty:'3,000 m',de:'500m warm-up → 10×200m hard (25s rest) → 500m cool-down. First 3,000m session.'},
+        {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'65 min outdoor',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 20 min Z2.'},
+        {d:'Fri',t:'swim',tl:'Swim — easy',ty:'2,000 m',de:'All Z2. Flush and recover.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 35 min run',de:'3h Z2 outdoor → treadmill → 30 min continuous Z2 + 5 min walk.'},
+        {d:'Sun',t:'run',tl:'Run — continuous',ty:'30 min treadmill',de:'Easy Z1–Z2. Recovery after big Saturday.'},
+      ]},
+      { label:'W16 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2.5h'},{c:'#E24B4A',l:'Run ~40m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+        {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week. Continuous running achieved. 3h+ bike done.',cl:'rest'},
+        {d:'Tue',t:'bike',tl:'Bike — easy',ty:'45 min Zwift',de:'Easy Z2.'},
+        {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
+        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'50 min outdoor',de:'10 min Z2 → 2×(8 min Z3 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'run',tl:'Run — easy',ty:'20 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Sat',t:'bike',tl:'Bike — TEST',ty:'20 min max effort',de:'10 min Z2 → 20 min maximal effort → cool-down. Fourth test.'},
+        {d:'Sun',t:'swim',tl:'Swim',ty:'1,000 m',de:'Easy Z2. Close out the block.'},
+      ]},
+    ]
+  },
+  { num:5, label:'B5 — Race-Specific 1', btnCls:'peak', dates:'Jul 6 – Aug 2',
+    desc:'<strong>Block 5 — Race-Specific 1 (Jul 6 – Aug 2):</strong> Sessions start mimicking race conditions. Long brick 3h+ bike + 45 min run. Swim includes full 1,900m race-distance efforts. July Abu Dhabi heat — outdoor riding before 7am only. Weekly volume ~9–10h.',
+    weeks:[
+      { label:'W17', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run ~1h 45m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'35 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'80 min Zwift',de:'Zwift for midweek — Abu Dhabi July heat. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'70 min Zwift',de:'15 min Z2 → 3×(10 min Z4 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim — race sim',ty:'1,900 m',de:'300m warm-up → 1,900m continuous at race effort → 200m cool-down. Note your time.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 40 min run',de:'3h Z2 outdoor (pre-7am) → treadmill → 35 min continuous Z2 + 5 min walk.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy continuous Z2.'},
+      ]},
+      { label:'W18', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~1h 50m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'35 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'85 min Zwift',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×200m at pace (25s rest) → 500m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'70 min Zwift',de:'10 min Z2 → 6×(4 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim — race sim',ty:'1,900 m',de:'Continuous 1,900m at race effort. No warm-up — simulate open-water race start.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 40 min run',de:'3.5h Z2 outdoor (pre-7am) → treadmill → 35 min continuous Z2 + 5 min walk.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'45 min treadmill',de:'Easy continuous Z2. Longest standalone run so far.'},
+      ]},
+      { label:'W19', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h'},{c:'#1A9E75',l:'Swim ~6,000m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Load week — keep all runs controlled.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim — hard',ty:'3,000 m',de:'500m warm-up → 10×200m hard (25s rest) → 500m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'70 min Zwift',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 20 min Z2.'},
+        {d:'Fri',t:'swim',tl:'Swim — easy',ty:'2,500 m',de:'All Z2. Flush and recover.'},
+        {d:'Sat',t:'brick',tl:'Brick — peak',ty:'3.5h bike + 45 min run',de:'3.5h Z2 outdoor → treadmill → 40 min continuous Z2 + 5 min walk.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'45 min treadmill',de:'Easy Z1–Z2 recovery run.'},
+      ]},
+      { label:'W20 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~45m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+        {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week. Race-distance swims and 3.5h+ bricks done.',cl:'rest'},
+        {d:'Tue',t:'bike',tl:'Bike — easy',ty:'50 min Zwift',de:'Short easy Z2.'},
+        {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Easy. Technique only.'},
+        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'55 min outdoor',de:'10 min Z2 → 2×(10 min Z3 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'run',tl:'Run — easy',ty:'25 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Sat',t:'bike',tl:'Bike — TEST',ty:'20 min max effort',de:'10 min Z2 → 20 min maximal effort → cool-down. Fifth test.'},
+        {d:'Sun',t:'swim',tl:'Swim',ty:'1,000 m',de:'Easy Z2. Close out the block.'},
+      ]},
+    ]
+  },
+  { num:6, label:'B6 — Peak', btnCls:'peak', dates:'Aug 3 – Sep 14',
+    desc:'<strong>Block 6 — Peak (Aug 3 – Sep 14):</strong> 6 weeks. Peak volume ~10–11h/week. Long brick reaches 4h bike + 60 min run. W24 is the full race rehearsal: swim 1.9k → bike 60k → run 10k non-stop. Recovery week at W26 before taper.',
+    weeks:[
+      { label:'W21', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy continuous Z2. Start of peak block.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'75 min Zwift',de:'15 min Z2 → 3×(10 min Z4 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'3,000 m',de:'500m easy → 10×200m hard (25s rest) → 500m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 50 min run',de:'3.5h Z2 outdoor (pre-7am) → treadmill → 45 min continuous Z2 + 5 min walk.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'45 min treadmill',de:'Easy continuous Z2.'},
+      ]},
+      { label:'W22', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 10m'},{c:'#1A9E75',l:'Swim ~6,000m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim — race sim',ty:'1,900 m',de:'300m warm-up → 1,900m continuous at race effort → 200m cool-down. Note your time.'},
+        {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'75 min Zwift',de:'10 min Z2 → 6×(4 min Z4 + 3 min Z2) → 15 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'3,000 m',de:'500m easy → 5×400m at pace (35s rest) → 500m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 55 min run',de:'3.5h Z2 outdoor → treadmill → 50 min continuous Z2 + 5 min walk.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'50 min treadmill',de:'Easy continuous Z2. Longest standalone run of the plan.'},
+      ]},
+      { label:'W23', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 10m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Peak week approaching — keep everything controlled.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'70 min Zwift',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 20 min Z2.'},
+        {d:'Fri',t:'swim',tl:'Swim — easy',ty:'2,500 m',de:'All Z2. Preparation for Saturday. Eat well, rest well.'},
+        {d:'Sat',t:'brick',tl:'Brick — peak',ty:'4h bike + 60 min run',de:'4h Z2 outdoor → treadmill → 55 min continuous Z2 + 5 min walk. Peak brick of the entire plan.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z1–Z2. Short recovery after peak brick.'},
+      ]},
+      { label:'W24 — Rehearsal', wCls:'rehearsal', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 15m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'35 min treadmill',de:'Easy Z2. Light week before the rehearsal.'},
+        {d:'Tue',t:'bike',tl:'Bike — easy',ty:'60 min Zwift',de:'Easy Z2. Save the legs for Saturday.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m warm-up → 6×200m at race pace → 400m cool-down. Sharp, not exhausting.'},
+        {d:'Thu',t:'rest',tl:'Rest',ty:'Full rest',de:'Rest before rehearsal. Sleep, eat, hydrate.',cl:'rest'},
+        {d:'Fri',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'Easy 1,000m. Loosen the shoulders. Nothing hard.'},
+        {d:'Sat',t:'brick',tl:'RACE REHEARSAL',ty:'Swim 1.9k → Bike 60k → Run 10k',de:'Full race rehearsal non-stop at race effort. The most important session of the entire plan.'},
+        {d:'Sun',t:'rest',tl:'Rest',ty:'Full rest',de:'Complete rest. You\'ve just done the hardest session of the plan.',cl:'rest'},
+      ]},
+      { label:'W25', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Back to normal after rehearsal.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'85 min Zwift',de:'Aerobic base. Z2 throughout.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace → 500m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'75 min Zwift',de:'15 min Z2 → 3×(10 min Z4 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'3,000 m',de:'500m easy → 10×200m hard (25s rest) → 500m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 55 min run',de:'3.5h Z2 outdoor → treadmill → 50 min continuous Z2 + 5 min walk.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'45 min treadmill',de:'Easy continuous Z2.'},
+      ]},
+      { label:'W26 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2.5h'},{c:'#E24B4A',l:'Run ~45m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+        {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week. Peak block complete. You have done everything the race requires.',cl:'rest'},
+        {d:'Tue',t:'bike',tl:'Bike — easy',ty:'50 min Zwift',de:'Short easy Z2.'},
+        {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
+        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'55 min Zwift',de:'10 min Z2 → 2×(10 min Z3 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Fri',t:'run',tl:'Run — easy',ty:'25 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Sat',t:'bike',tl:'Bike — TEST',ty:'20 min max effort',de:'10 min Z2 → 20 min maximal effort → cool-down. Final fitness test. Compare all six results.'},
+        {d:'Sun',t:'swim',tl:'Swim',ty:'1,000 m',de:'Easy Z2. Taper starts Monday.'},
+      ]},
+    ]
+  },
+  { num:7, label:'B7 — Taper + Race', btnCls:'taper', dates:'Sep 15 – Dec race day',
+    desc:'<strong>Block 7 — Taper + Race (Sep 15 – Dec):</strong> Volume drops ~40% over 3 weeks, intensity maintained. Final 2 weeks: nothing new, nothing long. Race week is minimal. Trust the 38 weeks of work.',
+    weeks:[
+      { label:'W27 — Taper 1', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~3,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'30 min treadmill',de:'Easy Z2. Volume drops — don\'t panic. Freshness is the goal now.'},
+        {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'60 min Zwift',de:'Z2 with 3×5 min Z3 bursts. Keep legs sharp.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m warm-up → 6×200m at race pace (30s rest) → 400m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — sharp',ty:'55 min Zwift',de:'15 min Z2 → 4×(5 min Z4 + 3 min Z2) → 10 min cool-down. Intensity maintained.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'1,500 m',de:'300m easy → 5×150m at race pace → 300m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick — shorter',ty:'2h bike + 30 min run',de:'2h Z2 → treadmill → 25 min Z2 + 5 min walk. Shorter but same feel.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'30 min treadmill',de:'Easy continuous Z2.'},
+      ]},
+      { label:'W28 — Taper 2', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~1h'},{c:'#1A9E75',l:'Swim ~2,500m'}], days:[
+        {d:'Mon',t:'run',tl:'Run — Z2',ty:'25 min treadmill',de:'Easy Z2. Legs should start feeling fresh.'},
+        {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'50 min Zwift',de:'10 min Z2 → 3×(5 min Z4 + 3 min Z2) → 12 min cool-down.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'1,500 m',de:'300m warm-up → 6×150m at race pace (20s rest) → 300m cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Z2',ty:'50 min Zwift',de:'Easy Z2 spin. Keep the legs turning.'},
+        {d:'Fri',t:'swim',tl:'Swim',ty:'1,000 m',de:'200m easy → 4×100m at race pace → 200m cool-down.'},
+        {d:'Sat',t:'brick',tl:'Brick — short',ty:'90 min bike + 20 min run',de:'90 min Z2 → treadmill → 15 min Z2 + 5 min walk. Race-feel without the fatigue.'},
+        {d:'Sun',t:'run',tl:'Run — Z2',ty:'20 min treadmill',de:'Easy Z2. Two weeks from race day.'},
+      ]},
+      { label:'W29 — Race -2wks', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~40m'},{c:'#1A9E75',l:'Swim ~1,500m'}], days:[
+        {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Nothing new from this week. No new routes, no new gear, no experiments.',cl:'rest'},
+        {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'40 min Zwift',de:'10 min Z2 → 2×(5 min Z4 + 3 min Z2) → 12 min cool-down.'},
+        {d:'Wed',t:'swim',tl:'Swim',ty:'1,000 m',de:'200m easy → 3×200m at race pace → 200m cool-down. Feel fast, don\'t work hard.'},
+        {d:'Thu',t:'bike',tl:'Bike — easy',ty:'40 min Zwift',de:'Easy Z2. Legs should feel light and snappy.'},
+        {d:'Fri',t:'run',tl:'Run — easy',ty:'20 min treadmill',de:'Easy Z2. Short. Keep the rhythm.'},
+        {d:'Sat',t:'brick',tl:'Brick — very short',ty:'60 min bike + 15 min run',de:'60 min easy Z2 → 15 min easy run. Just reminding the body of the transition.'},
+        {d:'Sun',t:'rest',tl:'Rest',ty:'Full rest',de:'Rest. Pack your race bag. Check your gear.',cl:'rest'},
+      ]},
+      { label:'Race week', wCls:'raceweek', vol:[{c:'#4A7DD4',l:'Bike ~30m'},{c:'#E24B4A',l:'Run ~0m'},{c:'#1A9E75',l:'Swim ~400m'}], days:[
+        {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Race week. Rest, eat well, sleep. Nothing you do now will make you fitter.',cl:'rest'},
+        {d:'Tue',t:'swim',tl:'Swim — activation',ty:'400 m easy',de:'Easy 400m. Feel your stroke. No effort whatsoever.'},
+        {d:'Wed',t:'rest',tl:'Rest',ty:'Full rest',de:'Rest.',cl:'rest'},
+        {d:'Thu',t:'bike',tl:'Bike — activation',ty:'30 min easy',de:'Easy Z1–Z2 with 3×1 min Z4 bursts. Keep legs awake. Nothing more.'},
+        {d:'Fri',t:'rest',tl:'Rest',ty:'Full rest',de:'Travel to race venue. Rack your bike. Walk the run course.',cl:'rest'},
+        {d:'Sat',t:'rest',tl:'Rest',ty:'Rest + prep',de:'Light 10 min walk. Check transition. Eat your normal pre-race dinner early. Sleep by 9pm.',cl:'rest'},
+        {d:'Sun',t:'race',tl:'RACE DAY',ty:'70.3 — December 2026',de:'Swim 1.9k → Bike 90k → Run 21.1k. Start easy on swim. Ride Z2–Z3. Run/walk first 5k then settle. Trust the 38 weeks.',cl:'race-day'},
+      ]},
+    ]
+  },
+];
+
+let curBlock = 0, curWeek = 0;
+
+function renderBlockNav() {
+  document.getElementById('block-nav').innerHTML = ALL.map((b,i) =>
+    `<button class="blk-btn ${b.btnCls||''} ${i===0?'active':''}" onclick="selectBlock(${i},this)">${b.label}</button>`
+  ).join('');
+}
+
+function selectBlock(i, btn) {
+  document.querySelectorAll('.blk-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  curBlock = i; curWeek = 0;
+  renderWeekNav(); renderWeek();
+}
+
+function selectWeek(i, btn) {
+  document.querySelectorAll('.wk-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  curWeek = i; renderWeek();
+}
+
+function renderWeekNav() {
+  const b = ALL[curBlock];
+  document.getElementById('block-desc-area').innerHTML = `<div class="block-desc">${b.desc}</div>`;
+  document.getElementById('week-nav').innerHTML = b.weeks.map((w,i) =>
+    `<button class="wk-btn ${w.wCls||''} ${i===0?'active':''}" onclick="selectWeek(${i},this)">${w.label}</button>`
+  ).join('');
+}
+
+function renderWeek() {
+  const w = ALL[curBlock].weeks[curWeek];
+  document.getElementById('vol-row').innerHTML = w.vol.map(v =>
+    `<div class="vol-pill"><span class="vol-dot" style="background:${v.c}"></span>${v.l}</div>`
+  ).join('');
+  document.getElementById('week-display').innerHTML = `<div class="days-grid">${w.days.map(d =>
+    `<div class="day-card${d.cl?' '+d.cl:''}">
+      <div class="day-name">${d.d}</div>
+      <span class="tag ${T[d.t]}">${d.tl}</span>
+      <div class="day-type">${d.ty}</div>
+      <div class="day-detail">${d.de}</div>
+    </div>`
+  ).join('')}</div>`;
+}
+
+renderBlockNav(); renderWeekNav(); renderWeek();
+</script>
+
+<!-- ===================== ATHLETE DASHBOARD ===================== -->
+<div style="margin-top:2.5rem; border-top: 1px solid #e0deda; padding-top:2rem;">
+  <div style="font-size:18px;font-weight:500;margin-bottom:4px;">Athlete Dashboard</div>
+  <div style="font-size:12px;color:#888;margin-bottom:1.5rem;">Based on Strava data · Nov 2025 – Mar 17 2026 · Updates as you log more activities</div>
+
+  <!-- Tab nav -->
+  <div style="display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;" id="dash-nav">
+    <button class="blk-btn active" onclick="showDash('overview',this)">Overview</button>
+    <button class="blk-btn" onclick="showDash('fitness',this)">Fitness &amp; Fatigue</button>
+    <button class="blk-btn" onclick="showDash('power',this)">Power &amp; HR</button>
+    <button class="blk-btn" onclick="showDash('volume',this)">Weekly Volume</button>
+    <button class="blk-btn" onclick="showDash('swim',this)">Swim</button>
+  </div>
+
+  <div id="dash-content"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ACTS = [{"date":"2025-11-16","type":"Ride","dist":12.52,"min":54.1,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":13.9,"cal":276.0,"elev":18.2},{"date":"2025-11-18","type":"Walk","dist":1.17,"min":13.3,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":5.3,"cal":114.0,"elev":3.6},{"date":"2025-11-23","type":"Ride","dist":20.16,"min":71.3,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":17.0,"cal":null,"elev":40.4},{"date":"2025-11-29","type":"Ride","dist":28.19,"min":93.1,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":18.2,"cal":null,"elev":52.8},{"date":"2025-12-13","type":"Ride","dist":9.13,"min":29.4,"watts":69.0,"hr":132.0,"maxhr":160.0,"effort":19.0,"spd":18.6,"cal":388.0,"elev":18.0},{"date":"2025-12-14","type":"Ride","dist":38.39,"min":138.6,"watts":51.0,"hr":135.0,"maxhr":155.0,"effort":131.0,"spd":16.6,"cal":476.0,"elev":53.3},{"date":"2025-12-15","type":"Swim","dist":0.5,"min":11.5,"watts":null,"hr":127.0,"maxhr":157.0,"effort":18.0,"spd":2.6,"cal":170.0,"elev":0.0},{"date":"2025-12-20","type":"Ride","dist":22.09,"min":81.2,"watts":75.0,"hr":138.0,"maxhr":175.0,"effort":87.0,"spd":16.3,"cal":1210.0,"elev":36.0},{"date":"2025-12-22","type":"Ride","dist":44.26,"min":154.7,"watts":73.0,"hr":144.0,"maxhr":168.0,"effort":218.0,"spd":17.2,"cal":2465.0,"elev":68.0},{"date":"2025-12-23","type":"Walk","dist":0.87,"min":15.3,"watts":null,"hr":101.0,"maxhr":112.0,"effort":2.0,"spd":3.4,"cal":113.0,"elev":1.0},{"date":"2025-12-24","type":"Walk","dist":1.5,"min":26.5,"watts":null,"hr":95.0,"maxhr":110.0,"effort":3.0,"spd":3.4,"cal":220.0,"elev":3.0},{"date":"2025-12-26","type":"Walk","dist":1.46,"min":27.1,"watts":null,"hr":91.0,"maxhr":105.0,"effort":3.0,"spd":3.2,"cal":210.0,"elev":3.0},{"date":"2025-12-26","type":"Walk","dist":2.11,"min":35.0,"watts":null,"hr":122.0,"maxhr":137.0,"effort":8.0,"spd":3.6,"cal":463.0,"elev":0.0},{"date":"2025-12-27","type":"Walk","dist":1.18,"min":22.2,"watts":null,"hr":92.0,"maxhr":100.0,"effort":3.0,"spd":3.2,"cal":152.0,"elev":0.0},{"date":"2025-12-27","type":"Ride","dist":14.23,"min":44.0,"watts":74.0,"hr":140.0,"maxhr":160.0,"effort":50.0,"spd":19.4,"cal":676.0,"elev":11.0},{"date":"2025-12-28","type":"Ride","dist":22.25,"min":74.5,"watts":75.0,"hr":135.0,"maxhr":152.0,"effort":71.0,"spd":17.9,"cal":1073.0,"elev":20.0},{"date":"2025-12-28","type":"Walk","dist":1.75,"min":32.0,"watts":null,"hr":102.0,"maxhr":110.0,"effort":5.0,"spd":3.3,"cal":237.0,"elev":0.0},{"date":"2025-12-30","type":"Walk","dist":1.6,"min":31.0,"watts":null,"hr":93.0,"maxhr":109.0,"effort":4.0,"spd":3.1,"cal":197.0,"elev":3.0},{"date":"2026-01-10","type":"Walk","dist":2.22,"min":38.3,"watts":null,"hr":101.0,"maxhr":111.0,"effort":6.0,"spd":3.5,"cal":290.0,"elev":2.0},{"date":"2026-01-10","type":"Virtual Ride","dist":24.64,"min":84.6,"watts":91.0,"hr":144.0,"maxhr":162.0,"effort":118.0,"spd":17.5,"cal":440.0,"elev":198.0},{"date":"2026-01-11","type":"Virtual Ride","dist":22.12,"min":58.8,"watts":95.0,"hr":131.0,"maxhr":155.0,"effort":38.0,"spd":22.6,"cal":318.0,"elev":48.0},{"date":"2026-01-13","type":"Virtual Ride","dist":10.91,"min":30.0,"watts":97.0,"hr":128.0,"maxhr":162.0,"effort":16.0,"spd":21.8,"cal":166.0,"elev":49.0},{"date":"2026-01-14","type":"Virtual Ride","dist":19.79,"min":65.5,"watts":109.0,"hr":151.0,"maxhr":176.0,"effort":123.0,"spd":18.1,"cal":409.0,"elev":241.0},{"date":"2026-01-15","type":"Walk","dist":2.14,"min":40.1,"watts":null,"hr":108.0,"maxhr":121.0,"effort":7.0,"spd":3.2,"cal":326.0,"elev":4.0},{"date":"2026-01-16","type":"Walk","dist":2.5,"min":43.0,"watts":null,"hr":106.0,"maxhr":123.0,"effort":8.0,"spd":3.5,"cal":418.0,"elev":3.0},{"date":"2026-01-16","type":"Virtual Ride","dist":11.49,"min":34.1,"watts":93.0,"hr":146.0,"maxhr":165.0,"effort":51.0,"spd":20.2,"cal":182.0,"elev":59.0},{"date":"2026-01-17","type":"Walk","dist":2.03,"min":37.9,"watts":null,"hr":100.0,"maxhr":109.0,"effort":6.0,"spd":3.2,"cal":252.0,"elev":1.0},{"date":"2026-01-17","type":"Virtual Ride","dist":23.89,"min":65.6,"watts":121.0,"hr":152.0,"maxhr":171.0,"effort":129.0,"spd":21.8,"cal":455.0,"elev":266.0},{"date":"2026-01-18","type":"Walk","dist":1.91,"min":34.0,"watts":null,"hr":96.0,"maxhr":108.0,"effort":5.0,"spd":3.4,"cal":251.0,"elev":1.0},{"date":"2026-01-18","type":"Swim","dist":0.45,"min":10.2,"watts":null,"hr":130.0,"maxhr":169.0,"effort":29.0,"spd":2.6,"cal":166.0,"elev":0.0},{"date":"2026-01-19","type":"Virtual Ride","dist":18.55,"min":50.2,"watts":84.0,"hr":123.0,"maxhr":135.0,"effort":17.0,"spd":22.2,"cal":241.0,"elev":29.0},{"date":"2026-01-21","type":"Weight Training","dist":0.0,"min":24.1,"watts":null,"hr":99.0,"maxhr":119.0,"effort":3.0,"spd":0.0,"cal":167.0,"elev":0.0},{"date":"2026-01-21","type":"Walk","dist":2.14,"min":37.4,"watts":null,"hr":102.0,"maxhr":110.0,"effort":6.0,"spd":3.4,"cal":258.0,"elev":3.0},{"date":"2026-01-22","type":"Swim","dist":0.5,"min":10.9,"watts":null,"hr":107.0,"maxhr":138.0,"effort":8.0,"spd":2.8,"cal":173.0,"elev":0.0},{"date":"2026-01-23","type":"Virtual Ride","dist":12.75,"min":36.7,"watts":83.0,"hr":124.0,"maxhr":135.0,"effort":13.0,"spd":20.8,"cal":174.0,"elev":53.0},{"date":"2026-01-24","type":"Walk","dist":2.11,"min":38.7,"watts":null,"hr":99.0,"maxhr":115.0,"effort":6.0,"spd":3.3,"cal":268.0,"elev":3.0},{"date":"2026-01-24","type":"Virtual Ride","dist":24.31,"min":64.2,"watts":112.0,"hr":139.0,"maxhr":166.0,"effort":67.0,"spd":22.7,"cal":412.0,"elev":171.0},{"date":"2026-01-25","type":"Virtual Ride","dist":25.03,"min":81.1,"watts":72.0,"hr":135.0,"maxhr":155.0,"effort":67.0,"spd":18.5,"cal":333.0,"elev":134.0},{"date":"2026-01-26","type":"Virtual Ride","dist":19.9,"min":59.5,"watts":70.0,"hr":144.0,"maxhr":155.0,"effort":86.0,"spd":20.1,"cal":240.0,"elev":32.0},{"date":"2026-01-30","type":"Weight Training","dist":0.0,"min":30.1,"watts":null,"hr":89.0,"maxhr":116.0,"effort":3.0,"spd":0.0,"cal":164.0,"elev":0.0},{"date":"2026-01-30","type":"Virtual Ride","dist":14.17,"min":56.0,"watts":76.0,"hr":118.0,"maxhr":136.0,"effort":14.0,"spd":15.2,"cal":244.0,"elev":120.0},{"date":"2026-01-31","type":"Virtual Ride","dist":18.82,"min":54.3,"watts":79.0,"hr":122.0,"maxhr":143.0,"effort":18.0,"spd":20.8,"cal":246.0,"elev":100.0},{"date":"2026-01-31","type":"Virtual Ride","dist":19.52,"min":68.8,"watts":86.0,"hr":133.0,"maxhr":150.0,"effort":49.0,"spd":17.0,"cal":337.0,"elev":156.0},{"date":"2026-02-11","type":"Weight Training","dist":0.0,"min":17.4,"watts":null,"hr":91.0,"maxhr":116.0,"effort":2.0,"spd":0.0,"cal":104.0,"elev":0.0},{"date":"2026-02-14","type":"Walk","dist":1.32,"min":23.4,"watts":null,"hr":95.0,"maxhr":107.0,"effort":3.0,"spd":3.4,"cal":248.0,"elev":1.0},{"date":"2026-02-14","type":"Virtual Ride","dist":15.85,"min":40.9,"watts":107.0,"hr":134.0,"maxhr":160.0,"effort":37.0,"spd":23.2,"cal":249.0,"elev":80.0},{"date":"2026-02-14","type":"Walk","dist":1.76,"min":32.6,"watts":null,"hr":96.0,"maxhr":107.0,"effort":4.0,"spd":3.2,"cal":255.0,"elev":1.0},{"date":"2026-02-14","type":"Swim","dist":1.3,"min":26.2,"watts":null,"hr":118.0,"maxhr":158.0,"effort":29.0,"spd":3.0,"cal":417.0,"elev":0.0},{"date":"2026-02-15","type":"Virtual Ride","dist":5.86,"min":16.4,"watts":97.0,"hr":122.0,"maxhr":157.0,"effort":5.0,"spd":21.4,"cal":90.0,"elev":55.0},{"date":"2026-02-15","type":"Virtual Ride","dist":17.17,"min":46.1,"watts":141.0,"hr":150.0,"maxhr":168.0,"effort":82.0,"spd":22.3,"cal":373.0,"elev":169.0},{"date":"2026-02-18","type":"Virtual Ride","dist":21.82,"min":60.5,"watts":88.0,"hr":123.0,"maxhr":160.0,"effort":20.0,"spd":21.6,"cal":306.0,"elev":75.0},{"date":"2026-02-19","type":"Virtual Ride","dist":15.02,"min":45.2,"watts":82.0,"hr":129.0,"maxhr":147.0,"effort":25.0,"spd":19.9,"cal":212.0,"elev":110.0},{"date":"2026-02-21","type":"Virtual Ride","dist":70.11,"min":192.7,"watts":85.0,"hr":118.0,"maxhr":140.0,"effort":55.0,"spd":21.8,"cal":935.0,"elev":252.0},{"date":"2026-02-23","type":"Swim","dist":0.33,"min":16.8,"watts":null,"hr":103.0,"maxhr":120.0,"effort":3.0,"spd":1.2,"cal":147.0,"elev":0.0},{"date":"2026-02-24","type":"Swim","dist":1.01,"min":45.3,"watts":null,"hr":105.0,"maxhr":134.0,"effort":13.0,"spd":1.3,"cal":386.0,"elev":0.0},{"date":"2026-02-28","type":"Swim","dist":1.27,"min":60.3,"watts":null,"hr":117.0,"maxhr":142.0,"effort":27.0,"spd":1.3,"cal":606.0,"elev":0.0},{"date":"2026-03-11","type":"Ride","dist":0.0,"min":34.6,"watts":null,"hr":109.0,"maxhr":122.0,"effort":6.0,"spd":0.0,"cal":283.0,"elev":0.0},{"date":"2026-03-12","type":"Swim","dist":1.05,"min":22.0,"watts":null,"hr":112.0,"maxhr":132.0,"effort":12.0,"spd":2.9,"cal":292.0,"elev":0.0},{"date":"2026-03-14","type":"Ride","dist":0.0,"min":60.3,"watts":null,"hr":102.0,"maxhr":131.0,"effort":10.0,"spd":0.0,"cal":398.0,"elev":0.0},{"date":"2026-03-14","type":"Run","dist":1.5,"min":17.8,"watts":104.0,"hr":113.0,"maxhr":149.0,"effort":4.0,"spd":5.1,"cal":173.0,"elev":0.0},{"date":"2026-03-15","type":"Run","dist":2.04,"min":24.8,"watts":184.0,"hr":127.0,"maxhr":150.0,"effort":12.0,"spd":4.9,"cal":305.0,"elev":0.0},{"date":"2026-03-17","type":"Virtual Run","dist":2.57,"min":25.4,"watts":null,"hr":128.0,"maxhr":159.0,"effort":15.0,"spd":6.1,"cal":197.0,"elev":0.0}];
+
+// ---- helpers ----
+const isBike = a => ['Ride','Virtual Ride'].includes(a.type);
+const isRun  = a => ['Run','Virtual Run'].includes(a.type);
+const isSwim = a => a.type === 'Swim';
+const isTraining = a => isBike(a)||isRun(a)||isSwim(a);
+
+// week key
+function wk(dateStr) {
+  const d = new Date(dateStr);
+  const jan1 = new Date(d.getFullYear(),0,1);
+  return d.getFullYear()+'-W'+String(Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7)).padStart(2,'0');
+}
+
+// weekly buckets
+const weeks = {};
+ACTS.forEach(a => {
+  const w = wk(a.date);
+  if(!weeks[w]) weeks[w]={key:w,bike:0,run:0,swim:0,total:0,effort:0,cal:0};
+  const m = a.min/60;
+  if(isBike(a)) weeks[w].bike+=m;
+  else if(isRun(a)) weeks[w].run+=m;
+  else if(isSwim(a)) weeks[w].swim+=m;
+  if(isTraining(a)) weeks[w].total+=m;
+  weeks[w].effort+=(a.effort||0);
+  weeks[w].cal+=(a.cal||0);
+});
+const wkArr = Object.values(weeks).sort((a,b)=>a.key>b.key?1:-1);
+const wkLabels = wkArr.map(w=>w.key.replace(/\d{4}-/,''));
+
+// fitness/fatigue (CTL/ATL/TSB approximation from effort/RPE)
+// CTL = 42-day EMA of daily load, ATL = 7-day EMA
+const dayLoad = {};
+ACTS.forEach(a => { if(a.effort) dayLoad[a.date]=(dayLoad[a.date]||0)+a.effort; });
+const allDates = [];
+let d = new Date('2025-11-01');
+const end = new Date('2026-03-17');
+while(d<=end){ allDates.push(d.toISOString().slice(0,10)); d=new Date(d.getTime()+86400000); }
+
+let ctl=0, atl=0;
+const ctlArr=[], atlArr=[], tsbArr=[], dateLabels=[];
+allDates.forEach(dt => {
+  const load = dayLoad[dt]||0;
+  ctl = ctl + (load-ctl)/42;
+  atl = atl + (load-atl)/7;
+  ctlArr.push(+ctl.toFixed(1));
+  atlArr.push(+atl.toFixed(1));
+  tsbArr.push(+(ctl-atl).toFixed(1));
+  dateLabels.push(dt.slice(5));
+});
+
+// power over time (bike watts)
+const bikeWatts = ACTS.filter(a=>isBike(a)&&a.watts).map(a=>({date:a.date,w:a.watts,hr:a.hr}));
+
+// swim data
+const swimData = ACTS.filter(isSwim).map(a=>({date:a.date,dist:Math.round(a.dist*1000),min:a.min,pace:a.dist>0?+(a.min/a.dist/10).toFixed(2):null}));
+
+// colors
+const C = { bike:'#4A7DD4', run:'#E24B4A', swim:'#1A9E75', grid:'rgba(0,0,0,0.06)', text:'#888' };
+
+const dashStyle = `
+  .metric-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:1.25rem; }
+  .metric { background:#ececea; border-radius:8px; padding:12px 14px; }
+  .metric .ml { font-size:11px; color:#888; margin-bottom:4px; }
+  .metric .mv { font-size:22px; font-weight:500; }
+  .metric .ms { font-size:11px; color:#888; margin-top:2px; }
+  .ch { position:relative; width:100%; margin-bottom:1.25rem; }
+  .sec { font-size:12px; font-weight:500; color:#888; margin-bottom:8px; margin-top:0.5rem; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .note { font-size:11px; color:#888; background:#f5f4f0; border-radius:6px; padding:8px 10px; margin-top:6px; line-height:1.6; }
+  table.act { width:100%; border-collapse:collapse; font-size:11px; }
+  table.act th { text-align:left; color:#888; font-weight:500; padding:4px 6px; border-bottom:1px solid #e0deda; }
+  table.act td { padding:5px 6px; border-bottom:1px solid #f0eeea; color:#333; }
+`;
+
+// chart defaults
+const baseOpts = (yLabel) => ({
+  responsive:true, maintainAspectRatio:false,
+  plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#fff',titleColor:'#333',bodyColor:'#666',borderColor:'#e0deda',borderWidth:1,padding:8} },
+  scales:{ x:{grid:{color:C.grid},ticks:{color:C.text,font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:16}},
+           y:{grid:{color:C.grid},ticks:{color:C.text,font:{size:10}},title:{display:!!yLabel,text:yLabel||'',color:C.text,font:{size:10}}} }
+});
+
+let charts = {};
+function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+
+// ---- OVERVIEW ----
+function dashOverview() {
+  const bikes = ACTS.filter(isBike);
+  const runs  = ACTS.filter(isRun);
+  const swims = ACTS.filter(isSwim);
+  const totBikeKm = bikes.reduce((s,a)=>s+a.dist,0);
+  const totRunKm  = runs.reduce((s,a)=>s+a.dist,0);
+  const totSwimKm = swims.reduce((s,a)=>s+a.dist,0);
+  const totHrs    = ACTS.filter(isTraining).reduce((s,a)=>s+a.min,0)/60;
+  const totCal    = ACTS.reduce((s,a)=>s+(a.cal||0),0);
+  const lastWkEffort = wkArr[wkArr.length-1]?.effort||0;
+
+  const recent = [...ACTS].filter(isTraining).reverse().slice(0,8);
+
+  document.getElementById('dash-content').innerHTML = `
+  <style>${dashStyle}</style>
+  <div class="metric-row">
+    <div class="metric"><div class="ml">Total training hours</div><div class="mv">${totHrs.toFixed(0)}h</div><div class="ms">Nov 2025 – today</div></div>
+    <div class="metric"><div class="ml">Bike distance</div><div class="mv">${Math.round(totBikeKm)} km</div><div class="ms">${bikes.length} rides</div></div>
+    <div class="metric"><div class="ml">Swim distance</div><div class="mv">${(totSwimKm*1000).toFixed(0)} m</div><div class="ms">${swims.length} sessions</div></div>
+    <div class="metric"><div class="ml">Run distance</div><div class="mv">${totRunKm.toFixed(1)} km</div><div class="ms">${runs.length} sessions</div></div>
+  </div>
+  <div class="metric-row">
+    <div class="metric"><div class="ml">Total calories</div><div class="mv">${Math.round(totCal/1000).toFixed(1)}k</div><div class="ms">kcal burned</div></div>
+    <div class="metric"><div class="ml">This week load</div><div class="mv">${Math.round(lastWkEffort)}</div><div class="ms">relative effort</div></div>
+    <div class="metric"><div class="ml">Current fitness (CTL)</div><div class="mv">${ctlArr[ctlArr.length-1]}</div><div class="ms">42-day avg load</div></div>
+    <div class="metric"><div class="ml">Form (TSB)</div><div class="mv" style="color:${tsbArr[tsbArr.length-1]>=0?'#1A9E75':'#E24B4A'}">${tsbArr[tsbArr.length-1]>0?'+':''}${tsbArr[tsbArr.length-1]}</div><div class="ms">${tsbArr[tsbArr.length-1]>=0?'Fresh':'Fatigued'}</div></div>
+  </div>
+  <div class="sec">Training mix by hours</div>
+  <div class="ch" style="height:180px;"><canvas id="mixChart"></canvas></div>
+  <div class="sec">Recent activities</div>
+  <table class="act">
+    <thead><tr><th>Date</th><th>Type</th><th>Dist</th><th>Time</th><th>Avg HR</th><th>Watts</th><th>Effort</th></tr></thead>
+    <tbody>${recent.map(a=>`<tr>
+      <td>${a.date.slice(5)}</td>
+      <td>${a.type}</td>
+      <td>${a.dist>0?a.dist.toFixed(1)+' km':'—'}</td>
+      <td>${Math.round(a.min)} min</td>
+      <td>${a.hr?Math.round(a.hr):'—'}</td>
+      <td>${a.watts?Math.round(a.watts)+'W':'—'}</td>
+      <td>${a.effort?Math.round(a.effort):'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+
+  const bikeH = bikes.reduce((s,a)=>s+a.min,0)/60;
+  const runH  = runs.reduce((s,a)=>s+a.min,0)/60;
+  const swimH = swims.reduce((s,a)=>s+a.min,0)/60;
+  destroyChart('mixChart');
+  charts.mixChart = new Chart(document.getElementById('mixChart'),{
+    type:'doughnut',
+    data:{ labels:['Bike','Run','Swim'], datasets:[{data:[+bikeH.toFixed(1),+runH.toFixed(1),+swimH.toFixed(1)], backgroundColor:[C.bike,C.run,C.swim], borderWidth:2, borderColor:'#f5f4f0'}] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:true,position:'right',labels:{color:C.text,font:{size:11},padding:12,boxWidth:10,boxHeight:10}},
+      tooltip:{backgroundColor:'#fff',titleColor:'#333',bodyColor:'#666',borderColor:'#e0deda',borderWidth:1} } }
+  });
+}
+
+// ---- FITNESS & FATIGUE ----
+function dashFitness() {
+  document.getElementById('dash-content').innerHTML = `
+  <style>${dashStyle}</style>
+  <div class="metric-row">
+    <div class="metric"><div class="ml">Fitness (CTL)</div><div class="mv">${ctlArr[ctlArr.length-1]}</div><div class="ms">42-day avg — higher = fitter</div></div>
+    <div class="metric"><div class="ml">Fatigue (ATL)</div><div class="mv">${atlArr[atlArr.length-1]}</div><div class="ms">7-day avg — higher = more tired</div></div>
+    <div class="metric"><div class="ml">Form (TSB)</div><div class="mv" style="color:${tsbArr[tsbArr.length-1]>=0?'#1A9E75':'#E24B4A'}">${tsbArr[tsbArr.length-1]>0?'+':''}${tsbArr[tsbArr.length-1]}</div><div class="ms">CTL − ATL</div></div>
+    <div class="metric"><div class="ml">Peak fitness</div><div class="mv">${Math.max(...ctlArr).toFixed(1)}</div><div class="ms">Best CTL in period</div></div>
+  </div>
+  <div class="sec">Fitness · Fatigue · Form over time</div>
+  <div class="ch" style="height:260px;"><canvas id="ffChart"></canvas></div>
+  <div class="note">
+    <strong>CTL (blue):</strong> Chronic Training Load — your fitness. Builds slowly over 42 days.<br>
+    <strong>ATL (red):</strong> Acute Training Load — your fatigue. Responds quickly over 7 days.<br>
+    <strong>TSB (green):</strong> Training Stress Balance = CTL − ATL. Positive = fresh, negative = fatigued. Race day target: +5 to +15.
+  </div>`;
+
+  destroyChart('ffChart');
+  charts.ffChart = new Chart(document.getElementById('ffChart'),{
+    type:'line',
+    data:{ labels:dateLabels, datasets:[
+      {label:'Fitness (CTL)',data:ctlArr,borderColor:C.bike,backgroundColor:'rgba(74,125,212,0.08)',borderWidth:2,pointRadius:0,tension:0.3,fill:true},
+      {label:'Fatigue (ATL)',data:atlArr,borderColor:C.run,backgroundColor:'rgba(226,75,74,0.06)',borderWidth:1.5,pointRadius:0,tension:0.3,fill:true},
+      {label:'Form (TSB)',data:tsbArr,borderColor:C.swim,backgroundColor:'rgba(26,158,117,0.08)',borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},
+    ]},
+    options:{...baseOpts(),
+      plugins:{ legend:{display:true,position:'top',labels:{color:C.text,font:{size:11},boxWidth:10,boxHeight:10,padding:12}},
+      tooltip:{mode:'index',intersect:false,backgroundColor:'#fff',titleColor:'#333',bodyColor:'#666',borderColor:'#e0deda',borderWidth:1} } }
+  });
+}
+
+// ---- POWER & HR ----
+function dashPower() {
+  const wattSessions = ACTS.filter(a=>isBike(a)&&a.watts);
+  const avgW = wattSessions.reduce((s,a)=>s+a.watts,0)/wattSessions.length;
+  const maxW = Math.max(...wattSessions.map(a=>a.watts));
+  const hrSessions = ACTS.filter(a=>isTraining(a)&&a.hr);
+  const avgHR = hrSessions.reduce((s,a)=>s+a.hr,0)/hrSessions.length;
+  const maxHR = Math.max(...ACTS.filter(a=>a.maxhr).map(a=>a.maxhr));
+
+  document.getElementById('dash-content').innerHTML = `
+  <style>${dashStyle}</style>
+  <div class="metric-row">
+    <div class="metric"><div class="ml">Avg bike power</div><div class="mv">${Math.round(avgW)}W</div><div class="ms">${wattSessions.length} sessions</div></div>
+    <div class="metric"><div class="ml">Peak session power</div><div class="mv">${maxW}W</div><div class="ms">Feb 15 intervals</div></div>
+    <div class="metric"><div class="ml">Avg heart rate</div><div class="mv">${Math.round(avgHR)} bpm</div><div class="ms">all training sessions</div></div>
+    <div class="metric"><div class="ml">Max HR recorded</div><div class="mv">${maxHR} bpm</div><div class="ms">Jan 14 Zwift</div></div>
+  </div>
+  <div class="two">
+    <div>
+      <div class="sec">Avg power per session (W)</div>
+      <div class="ch" style="height:200px;"><canvas id="wattChart"></canvas></div>
+    </div>
+    <div>
+      <div class="sec">Avg HR per session (bpm)</div>
+      <div class="ch" style="height:200px;"><canvas id="hrChart"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">HR distribution across sessions</div>
+  <div class="ch" style="height:180px;"><canvas id="hrDistChart"></canvas></div>
+  <div class="note">
+    <strong>Power trend:</strong> Your Zwift avg power ranged 70–141W Jan–Feb. No FTP test done yet — the 20 min test in W4 will establish your baseline. Estimated FTP ~105–115W based on sustained efforts.<br>
+    <strong>HR:</strong> Most training sessions in 120–145 bpm range. Max recorded 176 bpm (Jan 14). Resting HR data not available from Strava export.
+  </div>`;
+
+  destroyChart('wattChart');
+  charts.wattChart = new Chart(document.getElementById('wattChart'),{
+    type:'bar',
+    data:{ labels:wattSessions.map(a=>a.date.slice(5)), datasets:[{data:wattSessions.map(a=>a.watts),backgroundColor:C.bike,borderRadius:3}] },
+    options:{...baseOpts('W'), scales:{...baseOpts('W').scales, x:{...baseOpts('W').scales.x,ticks:{...baseOpts('W').scales.x.ticks,maxTicksLimit:12}}}}
+  });
+
+  const hrS = hrSessions.sort((a,b)=>a.date>b.date?1:-1);
+  destroyChart('hrChart');
+  charts.hrChart = new Chart(document.getElementById('hrChart'),{
+    type:'line',
+    data:{ labels:hrS.map(a=>a.date.slice(5)), datasets:[
+      {data:hrS.map(a=>a.hr),borderColor:C.run,backgroundColor:'rgba(226,75,74,0.08)',borderWidth:1.5,pointRadius:2,tension:0.3,fill:true,label:'Avg HR'},
+      {data:hrS.map(a=>a.maxhr),borderColor:'rgba(226,75,74,0.3)',borderWidth:1,pointRadius:0,tension:0.3,fill:false,label:'Max HR'},
+    ]},
+    options:{...baseOpts('bpm'), plugins:{legend:{display:true,position:'top',labels:{color:C.text,font:{size:10},boxWidth:8,boxHeight:8,padding:8}},tooltip:{mode:'index',intersect:false,backgroundColor:'#fff',titleColor:'#333',bodyColor:'#666',borderColor:'#e0deda',borderWidth:1}}}
+  });
+
+  // HR zone distribution
+  const zones = [0,0,0,0,0];
+  hrSessions.forEach(a => {
+    const h = a.hr;
+    if(h<115) zones[0]++;
+    else if(h<130) zones[1]++;
+    else if(h<145) zones[2]++;
+    else if(h<160) zones[3]++;
+    else zones[4]++;
+  });
+  destroyChart('hrDistChart');
+  charts.hrDistChart = new Chart(document.getElementById('hrDistChart'),{
+    type:'bar',
+    data:{ labels:['Z1 <115','Z2 115–129','Z3 130–144','Z4 145–159','Z5 160+'],
+           datasets:[{data:zones,backgroundColor:[C.swim,'#4A7DD4','#EF9F27','#D85A30',C.run],borderRadius:4}] },
+    options:{...baseOpts('sessions'), indexAxis:'y',
+      scales:{ x:{...baseOpts().scales.x,ticks:{color:C.text,font:{size:10}}}, y:{grid:{display:false},ticks:{color:C.text,font:{size:10}}} }}
+  });
+}
+
+// ---- WEEKLY VOLUME ----
+function dashVolume() {
+  const totArr = wkArr.map(w=>+w.total.toFixed(1));
+  const maxTot = Math.max(...totArr);
+
+  document.getElementById('dash-content').innerHTML = `
+  <style>${dashStyle}</style>
+  <div class="metric-row">
+    <div class="metric"><div class="ml">Peak week (hrs)</div><div class="mv">${maxTot.toFixed(1)}h</div><div class="ms">W52 Dec 2025</div></div>
+    <div class="metric"><div class="ml">Avg active week (hrs)</div><div class="mv">${(totArr.filter(v=>v>0).reduce((s,v)=>s+v,0)/totArr.filter(v=>v>0).length).toFixed(1)}h</div><div class="ms">excl. zero weeks</div></div>
+    <div class="metric"><div class="ml">Block 1 target</div><div class="mv">~5h</div><div class="ms">per active week</div></div>
+    <div class="metric"><div class="ml">Peak block target</div><div class="mv">~11h</div><div class="ms">Block 6 weeks</div></div>
+  </div>
+  <div class="sec">Weekly training hours by discipline</div>
+  <div class="ch" style="height:240px;"><canvas id="volChart"></canvas></div>
+  <div class="sec">Weekly relative effort (load)</div>
+  <div class="ch" style="height:160px;"><canvas id="effortChart"></canvas></div>
+  <div class="note">
+    <strong>Training load gap:</strong> Jan had your highest Zwift volume. Feb dropped off. March is restarting. Block 1 target is ~5h/week by W3 — you're on track with today's sessions included.
+  </div>`;
+
+  destroyChart('volChart');
+  charts.volChart = new Chart(document.getElementById('volChart'),{
+    type:'bar',
+    data:{ labels:wkLabels, datasets:[
+      {label:'Bike',data:wkArr.map(w=>+w.bike.toFixed(1)),backgroundColor:C.bike,stack:'s',borderRadius:2},
+      {label:'Run', data:wkArr.map(w=>+w.run.toFixed(1)), backgroundColor:C.run, stack:'s',borderRadius:2},
+      {label:'Swim',data:wkArr.map(w=>+w.swim.toFixed(1)),backgroundColor:C.swim,stack:'s',borderRadius:2},
+    ]},
+    options:{...baseOpts('hours'),
+      scales:{
+        x:{stacked:true,grid:{color:C.grid},ticks:{color:C.text,font:{size:10},maxRotation:45}},
+        y:{stacked:true,grid:{color:C.grid},ticks:{color:C.text,font:{size:10},callback:v=>v+'h'}}
+      },
+      plugins:{ legend:{display:true,position:'top',labels:{color:C.text,font:{size:11},boxWidth:10,boxHeight:10,padding:12}},
+      tooltip:{mode:'index',intersect:false,backgroundColor:'#fff',titleColor:'#333',bodyColor:'#666',borderColor:'#e0deda',borderWidth:1} }
+    }
+  });
+
+  destroyChart('effortChart');
+  charts.effortChart = new Chart(document.getElementById('effortChart'),{
+    type:'bar',
+    data:{ labels:wkLabels, datasets:[{data:wkArr.map(w=>Math.round(w.effort)),backgroundColor:'rgba(74,125,212,0.5)',borderRadius:3,label:'Load'}] },
+    options:{...baseOpts('effort'),
+      plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#fff',titleColor:'#333',bodyColor:'#666',borderColor:'#e0deda',borderWidth:1} }
+    }
+  });
+}
+
+// ---- SWIM ----
+function dashSwim() {
+  const avgPace = swimData.filter(s=>s.pace&&s.pace<4).reduce((s,a)=>s+a.pace,0)/swimData.filter(s=>s.pace&&s.pace<4).length;
+  const bestPace = Math.min(...swimData.filter(s=>s.pace&&s.pace<4).map(s=>s.pace));
+  const maxDist = Math.max(...swimData.map(s=>s.dist));
+
+  document.getElementById('dash-content').innerHTML = `
+  <style>${dashStyle}</style>
+  <div class="metric-row">
+    <div class="metric"><div class="ml">Sessions</div><div class="mv">${swimData.length}</div><div class="ms">Dec 2025 – Mar 2026</div></div>
+    <div class="metric"><div class="ml">Best pace</div><div class="mv">${bestPace.toFixed(2)}</div><div class="ms">min/100m</div></div>
+    <div class="metric"><div class="ml">Avg pace</div><div class="mv">${avgPace.toFixed(2)}</div><div class="ms">min/100m (clean sessions)</div></div>
+    <div class="metric"><div class="ml">Longest session</div><div class="mv">${maxDist}m</div><div class="ms">Race distance: 1,900m</div></div>
+  </div>
+  <div class="two">
+    <div>
+      <div class="sec">Distance per session (m)</div>
+      <div class="ch" style="height:200px;"><canvas id="swimDistChart"></canvas></div>
+    </div>
+    <div>
+      <div class="sec">Pace per session (min/100m)</div>
+      <div class="ch" style="height:200px;"><canvas id="swimPaceChart"></canvas></div>
+    </div>
+  </div>
+  <div class="note">
+    <strong>Pace note:</strong> Feb 23–28 sessions show slower pace (4.5–5.1 min/100m) — likely open turns or broken sets rather than a regression. Your clean pace is consistently 2.0–2.3 min/100m which is solid for fitness swimming.<br>
+    <strong>Race target:</strong> 1,900m at 2.1 min/100m = ~40 min swim split. Achievable from current base with the volume build in the plan.
+  </div>`;
+
+  const cleanSwims = swimData.filter(s=>s.dist>300);
+  destroyChart('swimDistChart');
+  charts.swimDistChart = new Chart(document.getElementById('swimDistChart'),{
+    type:'bar',
+    data:{ labels:cleanSwims.map(s=>s.date.slice(5)), datasets:[{data:cleanSwims.map(s=>s.dist),backgroundColor:C.swim,borderRadius:3}] },
+    options:{...baseOpts('m')}
+  });
+
+  const paceSwims = swimData.filter(s=>s.pace&&s.pace<6&&s.dist>300);
+  destroyChart('swimPaceChart');
+  charts.swimPaceChart = new Chart(document.getElementById('swimPaceChart'),{
+    type:'line',
+    data:{ labels:paceSwims.map(s=>s.date.slice(5)), datasets:[{data:paceSwims.map(s=>s.pace),borderColor:C.swim,backgroundColor:'rgba(26,158,117,0.1)',borderWidth:2,pointRadius:4,tension:0.2,fill:true}] },
+    options:{...baseOpts('min/100m'), scales:{...baseOpts().scales, y:{...baseOpts().scales.y, reverse:true, ticks:{color:C.text,font:{size:10},callback:v=>v.toFixed(1)}}}}
+  });
+}
+
+// ---- ROUTER ----
+function showDash(tab, btn) {
+  document.querySelectorAll('#dash-nav .blk-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  Object.values(charts).forEach(c=>c.destroy());
+  charts = {};
+  if(tab==='overview') dashOverview();
+  else if(tab==='fitness') dashFitness();
+  else if(tab==='power') dashPower();
+  else if(tab==='volume') dashVolume();
+  else if(tab==='swim') dashSwim();
+}
+
+dashOverview();
+</script>
+
