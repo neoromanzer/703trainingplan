@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
+
   :root {
     --bg:        #0b0f1a;
     --surface:   #0f1623;
@@ -18,9 +19,9 @@
     --text:      #dde4f0;
     --text2:     #6b82a0;
     --text3:     #3d5270;
-    --bike:      #1a6fc4;
+    --bike:      #FC6719;
     --run:       #c0392b;
-    --swim:      #0e7c65;
+    --swim:      #2176c7;
     --peak:      #8b1a1a;
     --taper:     #7a5c0a;
     --gold:      #c9a227;
@@ -30,14 +31,11 @@
 
   /* ── HEADER ── */
   .race-banner {
-    border-left: 3px solid var(--accent);
-    padding: 10px 16px;
+    position: relative;
+    overflow: hidden;
     margin-bottom: 1.75rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--surface);
-    border-top: none; border-right: none; border-bottom: none;
+    background: #0b0f1a;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
   }
   .race-banner strong { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); letter-spacing: 0.04em; text-transform: uppercase; }
   .race-banner span { font-size: 11px; color: var(--text2); letter-spacing: 0.06em; text-transform: uppercase; }
@@ -102,6 +100,11 @@
   .day-card.today { border-color: var(--accent); border-left-width: 2px; }
   .day-card.race-day { border-color: var(--gold); border-left-width: 2px; background: #1a1400; }
   .day-card.past { opacity: 0.45; }
+  .bc { font-family: 'Barlow Condensed', sans-serif; }
+  .hero-num { font-size:20px; font-weight:700; color:#dde4f0; }
+  .hero-lbl { font-size:9px; color:#3d5270; text-transform:uppercase; letter-spacing:.08em; }
+  .hero-hl { font-size:22px; font-weight:700; color:#dde4f0; line-height:1.2; margin-bottom:6px; }
+  .hero-tag { font-size:10px; font-weight:700; letter-spacing:.14em; }
 
   .day-name { font-family: 'Barlow Condensed', sans-serif; font-size: 9px; font-weight: 600; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.1em; }
   .day-type { font-size: 11px; font-weight: 500; color: var(--text); margin-bottom: 3px; line-height: 1.4; }
@@ -123,20 +126,36 @@
 
   @media (max-width: 800px) { .days-grid { grid-template-columns: repeat(4, 1fr); } }
   @media (max-width: 500px) { .days-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem;}
+  .metric{background:#0f1623;border:1px solid rgba(255,255,255,0.07);padding:12px 14px;}
+  .metric .ml{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#3d5270;margin-bottom:6px;}
+  .metric .mv{font-size:24px;font-weight:700;color:#dde4f0;}
+  .metric .ms{font-size:10px;color:#3d5270;margin-top:2px;}
+  .ch{position:relative;width:100%;margin-bottom:1.25rem;}
+  .sec{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3d5270;margin-bottom:8px;margin-top:.5rem;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .note{font-size:11px;color:#6b82a0;background:#0f1623;border-left:2px solid rgba(255,255,255,0.1);padding:9px 12px;margin-top:6px;line-height:1.6;}
+  .note strong{color:#dde4f0;font-weight:600;}
+  table.act{width:100%;border-collapse:collapse;font-size:11px;}
+  table.act th{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;text-align:left;color:#3d5270;padding:5px 6px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  table.act td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,0.04);color:#6b82a0;}
+  table.act tr:hover td{background:#0f1623;color:#dde4f0;}
+  .live-badge{display:inline-block;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:1px 6px;background:rgba(26,111,196,0.15);border-left:2px solid #1a8fd1;color:#5ab3e8;margin-left:8px;}
+  .split-lbl {font-size:8px;font-weight:700;letter-spacing:.1em;color:#3d5270;margin-bottom:3px;}
 </style>
 </head>
 <body>
-
 <!-- ── INTERVALS.ICU FLOATING WIDGET ── -->
 <div style="position:fixed;top:14px;right:16px;z-index:999;">
   <button onclick="toggleSettings()" id="settings-btn"
-    style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:7px 14px;border:1px solid rgba(255,255,255,0.13);background:#0f1623;color:#6b82a0;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s;">
-    <span id="conn-dot" style="width:6px;height:6px;border-radius:50%;background:#3d5270;flex-shrink:0;"></span>
+    style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:7px 14px;border:1px solid rgba(255,255,255,0.13);background:#0f1623;color:#6b82a0;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s;">
+    <span id="conn-dot"><svg id="conn-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#3d5270" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;transition:stroke .2s;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
     <span id="settings-btn-label">intervals.icu</span>
     <span id="last-refresh" style="font-size:9px;color:#3d5270;margin-left:4px;"></span>
   </button>
   <div id="settings-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:340px;background:#0f1623;border:1px solid rgba(255,255,255,0.13);padding:16px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#3d5270;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.07);">Connect intervals.icu</div>
+    <div style="font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#3d5270;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.07);">Connect intervals.icu</div>
     <div style="margin-bottom:10px;">
       <div style="font-size:10px;color:#3d5270;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.08em;">Athlete ID</div>
       <input id="inp-athlete" type="text" placeholder="e.g. i12345" style="width:100%;background:#151e2e;border:1px solid rgba(255,255,255,0.1);color:#dde4f0;padding:7px 10px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;">
@@ -145,37 +164,165 @@
       <div style="font-size:10px;color:#3d5270;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.08em;">API Key</div>
       <input id="inp-apikey" type="password" placeholder="Settings → Developer Settings" style="width:100%;background:#151e2e;border:1px solid rgba(255,255,255,0.1);color:#dde4f0;padding:7px 10px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;">
     </div>
-    <button onclick="connectAndFetch()" style="width:100%;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:9px;border:1px solid #1a6fc4;background:#0d3f6e;color:#5a9ee0;cursor:pointer;">Fetch data</button>
+    <button onclick="connectAndFetch()" style="width:100%;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:9px;border:1px solid #1a6fc4;background:#0d3f6e;color:#5a9ee0;cursor:pointer;">Fetch data</button>
     <div style="font-size:10px;color:#3d5270;margin-top:8px;line-height:1.5;">Athlete ID: from your intervals.icu profile URL. API key: Settings → Developer Settings → Generate API Key. Saved in your browser.</div>
     <div id="fetch-error" style="display:none;font-size:11px;color:#e07070;margin-top:8px;padding:6px 10px;background:rgba(192,57,43,0.1);border-left:2px solid #c0392b;"></div>
   </div>
 </div>
 
 <div class="race-banner">
-  <strong>ALVARO — ROAD TO IRONMAN 70.3</strong>
-  <span>38 weeks &nbsp;·&nbsp; 7 blocks &nbsp;·&nbsp; Swim 1.9k &nbsp;·&nbsp; Bike 90k &nbsp;·&nbsp; Run 21.1k</span>
+  <!-- Background: abstract triathlon landscape — no figures -->
+  <svg viewBox="0 0 1200 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"
+    style="position:absolute;inset:0;width:100%;height:100%;opacity:0.22;">
+
+    <!-- Sky gradient fill -->
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0b0f1a"/>
+        <stop offset="100%" stop-color="#111827"/>
+      </linearGradient>
+      <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2176c7" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#0d2a4a" stop-opacity="0.8"/>
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="160" fill="url(#skyGrad)"/>
+
+    <!-- Distant mountain range -->
+    <path d="M0 100 L80 55 L160 85 L260 35 L360 75 L460 42 L560 70 L660 28 L760 65 L860 38 L960 72 L1060 45 L1140 68 L1200 50 L1200 160 L0 160Z"
+      fill="#0d1420" opacity="0.9"/>
+    <!-- Closer mountain range with snow caps -->
+    <path d="M0 120 L100 72 L180 100 L300 50 L380 88 L500 55 L580 90 L700 40 L780 78 L900 52 L980 85 L1100 55 L1200 75 L1200 160 L0 160Z"
+      fill="#111e30" opacity="0.85"/>
+    <!-- Snow caps -->
+    <path d="M300 50 L320 65 L280 65Z" fill="white" opacity="0.15"/>
+    <path d="M700 40 L718 56 L682 56Z" fill="white" opacity="0.12"/>
+    <path d="M500 55 L514 68 L486 68Z" fill="white" opacity="0.1"/>
+    <path d="M900 52 L913 64 L887 64Z" fill="white" opacity="0.1"/>
+
+    <!-- Water surface -->
+    <path d="M0 118 Q60 108 120 118 Q180 128 240 118 Q300 108 360 118 Q420 128 480 118 Q540 108 600 118 Q660 128 720 118 Q780 108 840 118 Q900 128 960 118 Q1020 108 1080 118 Q1140 128 1200 118 L1200 160 L0 160Z"
+      fill="url(#waterGrad)"/>
+    <path d="M0 128 Q80 120 160 128 Q240 136 320 128 Q400 120 480 128 Q560 136 640 128 Q720 120 800 128 Q880 136 960 128 Q1040 120 1120 128 Q1160 132 1200 128 L1200 160 L0 160Z"
+      fill="#2176c7" opacity="0.25"/>
+    <!-- Water shimmer lines -->
+    <line x1="50" y1="132" x2="100" y2="132" stroke="white" stroke-width="0.8" opacity="0.15"/>
+    <line x1="300" y1="138" x2="360" y2="138" stroke="white" stroke-width="0.8" opacity="0.12"/>
+    <line x1="620" y1="134" x2="680" y2="134" stroke="white" stroke-width="0.8" opacity="0.12"/>
+    <line x1="900" y1="140" x2="950" y2="140" stroke="white" stroke-width="0.8" opacity="0.1"/>
+
+    <!-- Bicycle (right, large, iconic) -->
+    <g transform="translate(870,28) scale(1.8)" stroke="#FC6719" stroke-width="1.8" fill="none" opacity="0.55">
+      <circle cx="46" cy="46" r="22"/>
+      <circle cx="0" cy="46" r="22"/>
+      <circle cx="24" cy="8" r="4"/>
+      <!-- Frame -->
+      <path d="M24 12 L24 34 L46 46"/>
+      <path d="M24 34 L0 46"/>
+      <path d="M12 22 L36 22 L24 34"/>
+      <path d="M24 12 L12 22"/>
+      <!-- Handlebars -->
+      <path d="M34 16 L42 12 L44 16"/>
+      <!-- Seat -->
+      <path d="M18 12 L30 12"/>
+      <!-- Spokes -->
+      <line x1="46" y1="24" x2="46" y2="46" opacity="0.3"/>
+      <line x1="35" y1="27" x2="46" y2="46" opacity="0.2"/>
+      <line x1="0" y1="24" x2="0" y2="46" opacity="0.3"/>
+      <line x1="11" y1="27" x2="0" y2="46" opacity="0.2"/>
+    </g>
+
+    <!-- Road / track lines -->
+    <line x1="0" y1="115" x2="1200" y2="115" stroke="white" stroke-width="0.5" stroke-dasharray="30,20" opacity="0.08"/>
+
+    <!-- Swim lane markers -->
+    <line x1="60" y1="118" x2="60" y2="155" stroke="white" stroke-width="1" stroke-dasharray="4,6" opacity="0.12"/>
+    <line x1="120" y1="118" x2="120" y2="155" stroke="white" stroke-width="1" stroke-dasharray="4,6" opacity="0.12"/>
+    <line x1="180" y1="118" x2="180" y2="155" stroke="white" stroke-width="1" stroke-dasharray="4,6" opacity="0.12"/>
+    <line x1="240" y1="118" x2="240" y2="155" stroke="white" stroke-width="1" stroke-dasharray="4,6" opacity="0.12"/>
+
+    <!-- Finish line (right edge) -->
+    <rect x="1148" y="0" width="8" height="160" fill="#FFD700" opacity="0.06"/>
+    <line x1="1152" y1="0" x2="1152" y2="160" stroke="#FFD700" stroke-width="1.5" stroke-dasharray="8,6" opacity="0.25"/>
+
+    <!-- Stars -->
+    <circle cx="120" cy="22" r="1.2" fill="white" opacity="0.5"/>
+    <circle cx="280" cy="14" r="0.8" fill="white" opacity="0.4"/>
+    <circle cx="450" cy="20" r="1.2" fill="white" opacity="0.45"/>
+    <circle cx="600" cy="10" r="0.8" fill="white" opacity="0.35"/>
+    <circle cx="820" cy="18" r="1.2" fill="white" opacity="0.4"/>
+    <circle cx="1080" cy="12" r="0.8" fill="white" opacity="0.35"/>
+    <circle cx="1180" cy="25" r="1" fill="white" opacity="0.3"/>
+    <!-- Moon hint -->
+    <circle cx="200" cy="28" r="7" fill="none" stroke="white" stroke-width="1" opacity="0.12"/>
+    <circle cx="205" cy="28" r="7" fill="#0b0f1a" opacity="0.9"/>
+  </svg>
+  <!-- Gradient overlay -->
+  <div style="position:absolute;inset:0;background:linear-gradient(90deg,#0b0f1a 0%,transparent 40%,transparent 70%,#0b0f1a 100%);pointer-events:none;"></div>
+  <!-- Content -->
+  <div style="position:relative;z-index:1;padding:20px 20px 18px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#3d5270;text-transform:uppercase;margin-bottom:6px;font-family:'Barlow Condensed',sans-serif;">
+        <span style="color:#FC6719;">▲</span>&nbsp; Training Dashboard
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#dde4f0;line-height:1;">
+        ALVARO
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#FC6719;margin-top:3px;">
+        Road to Ironman 70.3 &nbsp;·&nbsp; December 2026
+      </div>
+    </div>
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#2176c7;">1.9</div>
+        <div style="font-size:9px;color:#3d5270;letter-spacing:.08em;text-transform:uppercase;">km swim</div>
+      </div>
+      <div style="color:#3d5270;font-size:16px;font-weight:300;">+</div>
+      <div style="text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#FC6719;">90</div>
+        <div style="font-size:9px;color:#3d5270;letter-spacing:.08em;text-transform:uppercase;">km bike</div>
+      </div>
+      <div style="color:#3d5270;font-size:16px;font-weight:300;">+</div>
+      <div style="text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#c0392b;">21.1</div>
+        <div style="font-size:9px;color:#3d5270;letter-spacing:.08em;text-transform:uppercase;">km run</div>
+      </div>
+      <div style="width:1px;height:36px;background:rgba(255,255,255,0.07);margin:0 4px;"></div>
+      <div style="text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#dde4f0;">38</div>
+        <div style="font-size:9px;color:#3d5270;letter-spacing:.08em;text-transform:uppercase;">weeks</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- VERDICT BAR -->
-<div id="verdict-bar" style="margin-bottom:1rem;padding:12px 16px;border-left:3px solid #3d5270;background:#0f1623;">
-  <span id="verdict-text" style="font-size:13px;color:#6b82a0;line-height:1.6;">Loading training assessment...</span>
-</div>
-
-<!-- STATUS INDICATOR -->
-<div id="status-indicator" style="display:none;margin-bottom:1.25rem;"></div>
+<div id="hero-banner" style="margin-bottom:1.5rem;"></div>
 <div class="block-nav" id="block-nav"></div>
 <div id="block-desc-area"></div>
 <div class="week-nav" id="week-nav"></div>
 <div class="vol-row" id="vol-row"></div>
 <div id="week-display"></div>
 
-<script>
-// ── GLOBALS shared across both scripts ───────────────────────────────────────
-var IS_LIVE = false;
-var WELLNESS = null;
-var ACTS = [];
+<!-- ATHLETE DASHBOARD -->
+<div style="margin-top:2.5rem;border-top:1px solid rgba(255,255,255,0.07);padding-top:2rem;">
+  <div style="font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#dde4f0;margin-bottom:3px;">Athlete Dashboard</div>
+  <div id="dash-status" style="font-size:11px;color:#6b82a0;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:1.5rem;">Live data not yet loaded</div>
+  <div style="display:flex;gap:0;margin-bottom:1.5rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,0.07);" id="dash-nav">
+    <button class="blk-btn active" onclick="showDash('overview',this)" data-tab="overview">Overview</button>
+    <button class="blk-btn" onclick="showDash('fitness',this)" data-tab="fitness">Fitness &amp; Fatigue</button>
+    <button class="blk-btn" onclick="showDash('volume',this)" data-tab="volume">Weekly Volume</button>
+    <button class="blk-btn" onclick="showDash('swim',this)" data-tab="swim">Swim</button>
+    <button class="blk-btn" onclick="showDash('bike',this)" data-tab="bike">Bike</button>
+    <button class="blk-btn" onclick="showDash('run',this)" data-tab="run">Run</button>
+  </div>
+  <div id="dash-content"></div>
+</div>
 
-const T = { bike:'tag-bike', run:'tag-run', swim:'tag-swim', brick:'tag-brick', rest:'tag-rest', race:'tag-race', done:'tag-done' };
+<script>
+// ── GLOBALS ──────────────────────────────────────────────────────────────────
+var IS_LIVE = false, WELLNESS = null, ACTS = [];
+let curBlock = 1, curWeek = 0;
 
 const ALL = [
   { num:0, label:'PAST', btnCls:'past', dates:'Nov 2025 – Mar 15 2026',
@@ -224,10 +371,11 @@ const ALL = [
     ]
   },
   { num:1, label:'B1 — Base 1', btnCls:'', dates:'Mar 17 – Apr 13',
-    desc:'<strong>Block 1 — Base 1 (Mar 17 – Apr 13):</strong> Thailand. Spinning bike + Zwift treadmill + 25m pool. All three disciplines introduced. Run/walk at 2:2. Swim builds 1,500m→2,000m. Saturday long bike 75–90 min. Ends with 20 min bike test.',
+    desc:'<strong>Block 1 — Base 1 (Mar 17 – Apr 13):</strong> Strength 1–2×/week — foundation phase. Glutes, single-leg stability, core.  Thailand. Spinning bike + Zwift treadmill + 25m pool. All three disciplines introduced. Run/walk at 2:2. Swim builds 1,500m→2,000m. Saturday long bike 75–90 min. Ends with 20 min bike test.',
     weeks:[
       { label:'W1', weekStart:'2026-03-16', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h 20m'},{c:'#E24B4A',l:'Run ~50m'},{c:'#1A9E75',l:'Swim ~3,000m'}], days:[
         {d:'Mon 16',t:'rest',tl:'Rest',ty:'Rest',de:'Nothing logged.',cl:'rest'},
+        {d:'Mon 16',t:'str',tl:'Strength A',ty:'40 min — Foundation',de:'First gym session. Goblet squat 3×12, Romanian deadlift 3×10, single-leg glute bridge 3×12 each, side plank 3×30s, dead bug 3×10. Start light — learn the movements.'},
         {d:'Tue 17',t:'done',tl:'✓ Done',ty:'Zwift run 25 min',de:'2.6 km easy Z2 run. Done.',cl:'done'},
         {d:'Wed 18',t:'bike',tl:'Bike — Z2',ty:'45 min spin',de:'Pure aerobic Z2. Cadence 85–90 rpm. Conversational throughout.',cl:'today'},
         {d:'Thu 19',t:'swim',tl:'Swim',ty:'1,500 m',de:'300m easy → 6×150m Z2 (20s rest) → 300m cool-down.'},
@@ -237,24 +385,29 @@ const ALL = [
       ]},
       { label:'W2', weekStart:'2026-03-23', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h 45m'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,600m'}], days:[
         {d:'Mon 23',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'2 min run / 2 min walk × 5. Easy Z2.'},
+        {d:'Mon 23',t:'str',tl:'Strength A',ty:'40 min — Foundation',de:'Goblet squat 3×12, RDL 3×10, single-leg press 3×10 each, hip thrust 3×12, Copenhagen plank 2×20s each, bird dog 3×10 each.'},
         {d:'Tue 24',t:'bike',tl:'Bike — Z2',ty:'50 min spin',de:'5 min longer than W1. Aerobic base.'},
         {d:'Wed 25',t:'swim',tl:'Swim',ty:'1,800 m',de:'400m warm-up → 8×100m Z2 (20s rest) → 600m steady → 200m cool-down.'},
         {d:'Thu 26',t:'bike',tl:'Bike — Threshold',ty:'50 min spin',de:'10 min Z2 → 2×(8 min Z4 + 4 min Z2) → 10 min cool-down.'},
         {d:'Fri 27',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'3 min run / 2 min walk × 5. Easy effort.'},
+        {d:'Fri 27',t:'str',tl:'Core B',ty:'25 min — Core',de:'After swim or standalone. Dead bug 3×10, hollow hold 3×20s, Pallof press 3×12, side plank 3×30s each. Quick and clean.'},
         {d:'Sat 28',t:'swim',tl:'Swim',ty:'1,800 m',de:'600m easy → 4×200m at pace (25s rest) → 400m cool-down.'},
         {d:'Sun 29',t:'bike',tl:'Bike — Long Z2',ty:'90–100 min spin',de:'Longer long ride. Z2 only.'},
       ]},
       { label:'W3', weekStart:'2026-03-30', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h 05m'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,700m'}], days:[
         {d:'Mon 30',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'3 min run / 2 min walk × 4. Load week — stay conservative.'},
+        {d:'Mon 30',t:'str',tl:'Strength A',ty:'40 min — Foundation',de:'Goblet squat 3×12, RDL 3×10, single-leg step-up 3×10 each, hip thrust 3×15, face pull 3×15, plank 3×40s.'},
         {d:'Tue 1 Apr',t:'bike',tl:'Bike — Z2',ty:'55 min spin',de:'Aerobic base. Keep effort controlled — need legs for Saturday brick.'},
         {d:'Wed 2',t:'swim',tl:'Swim — hard',ty:'2,000 m',de:'400m warm-up → 8×100m hard (15s rest) → 4×100m Z2 → 200m cool-down.'},
         {d:'Thu 3',t:'bike',tl:'Bike — VO2',ty:'50 min spin',de:'10 min Z2 → 5×(2 min Z5 + 3 min Z1) → 10 min Z2.'},
         {d:'Fri 4',t:'swim',tl:'Swim — easy',ty:'1,500 m',de:'All Z2. Hard week — flush, don\'t load.'},
+        {d:'Fri 4',t:'str',tl:'Core B',ty:'25 min — Core',de:'After swim. Copenhagen plank 2×25s each, suitcase carry 3×20m each, side plank 3×30s, clamshell 3×15 each.'},
         {d:'Sat 5',t:'brick',tl:'Brick',ty:'75 min bike + 15 min run',de:'75 min Z2 spin → treadmill → 2 min run / 2 min walk × 3 + 3 min easy.'},
         {d:'Sun 6',t:'run',tl:'Run/walk',ty:'20 min treadmill',de:'2 min run / 2 min walk × 4. Easy Z1 recovery.'},
       ]},
       { label:'W4 ↩', weekStart:'2026-04-06', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~1h 50m'},{c:'#E24B4A',l:'Run ~30m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon 7',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
+        {d:'Mon 7',t:'str',tl:'Strength — light',ty:'30 min — Recovery week',de:'Recovery week — keep it easy. Goblet squat 2×12, hip thrust 2×12, plank 2×40s, dead bug 2×10. No fatigue.'},
         {d:'Tue 8',t:'bike',tl:'Bike — easy',ty:'35 min spin',de:'Short easy Z2.'},
         {d:'Wed 9',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
         {d:'Thu 10',t:'bike',tl:'Bike — tempo',ty:'40 min spin',de:'10 min Z2 → 2×(5 min Z3 + 5 min Z2) → 10 min cool-down.'},
@@ -265,12 +418,14 @@ const ALL = [
     ]
   },
   { num:2, label:'B2 — Base 2', btnCls:'', dates:'Apr 14 – May 10',
-    desc:'<strong>Block 2 — Base 2 (Apr 14 – May 10):</strong> Abu Dhabi. Outdoor riding on Eulogia replaces spinning on Saturdays. Zwift for runs. Pool for swims. Run/walk progresses to 3:2. Long bike pushes to 2h. First proper brick.',
+    desc:'<strong>Block 2 — Base 2 (Apr 14 – May 10):</strong> Strength 2×/week — base strength endurance. Add load progressively.  Abu Dhabi. Outdoor riding on Eulogia replaces spinning on Saturdays. Zwift for runs. Pool for swims. Run/walk progresses to 3:2. Long bike pushes to 2h. First proper brick.',
     weeks:[
       { label:'W5', weekStart:'2026-04-13', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~3,600m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'3 min run / 2 min walk × 4. First 3:2 session. Easy Z2.'},
+        {d:'Mon',t:'str',tl:'Strength A',ty:'45 min — Base',de:'Goblet squat 4×10, RDL 3×10, Bulgarian split squat 3×10 each, hip thrust 4×12, lat pulldown 3×12, Copenhagen plank 3×25s. Add load comfortably.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'50 min Zwift',de:'Pure aerobic. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'1,800 m',de:'400m warm-up → 8×100m Z2 (20s rest) → 600m → 200m cool-down.'},
+        {d:'Wed',t:'str',tl:'Core B',ty:'25 min — Core',de:'After swim. Dead bug 3×10, Pallof press 3×12, side plank 3×35s each, single-leg glute bridge 3×12 each, hollow hold 3×20s.'},
         {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'50 min Zwift',de:'10 min Z2 → 2×(8 min Z4 + 4 min Z2) → 10 min cool-down.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'1,800 m',de:'600m easy → 4×200m at pace (25s rest) → 400m cool-down.'},
         {d:'Sat',t:'bike',tl:'Bike — Long Z2',ty:'2h outdoor/Zwift',de:'First 2h ride. Z2 only. Outdoors on Eulogia if back in Abu Dhabi.'},
@@ -278,8 +433,10 @@ const ALL = [
       ]},
       { label:'W6', weekStart:'2026-04-20', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3.5h'},{c:'#E24B4A',l:'Run ~1h 35m'},{c:'#1A9E75',l:'Swim ~3,800m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'3 min run / 2 min walk × 5. Easy Z2.'},
+        {d:'Mon',t:'str',tl:'Strength A',ty:'45 min — Base',de:'Goblet squat 4×10, RDL 4×8, single-leg press 3×10 each, hip thrust 4×12, cable row 3×12, face pull 3×15. Add 5% load.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'55 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m warm-up → 10×100m Z2 (20s rest) → 400m → 200m cool-down.'},
+        {d:'Wed',t:'str',tl:'Core B',ty:'25 min — Core',de:'After swim. Copenhagen plank 3×25s each, suitcase carry 3×25m each, hollow hold 3×25s, V-sit 3×10, bird dog 3×10.'},
         {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'55 min Zwift',de:'10 min Z2 → 4×(3 min Z4 + 3 min Z2) → 10 min cool-down.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'1,800 m',de:'300m easy → 6×200m at pace (25s rest) → 300m cool-down.'},
         {d:'Sat',t:'brick',tl:'Brick',ty:'90 min bike + 20 min run',de:'90 min Z2 outdoor → treadmill → 3 min run / 2 min walk × 4.'},
@@ -287,8 +444,10 @@ const ALL = [
       ]},
       { label:'W7', weekStart:'2026-04-27', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 35m'},{c:'#1A9E75',l:'Swim ~4,200m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'3 min run / 2 min walk × 5. Load week — stay conservative.'},
+        {d:'Mon',t:'str',tl:'Strength A',ty:'45 min — Load week',de:'Load week. Goblet squat 4×10, Bulgarian split squat 3×10 each, hip thrust 4×12, lat pulldown 3×12, push-up 3×18. Keep effort controlled.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'60 min Zwift',de:'First full hour ride. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — hard',ty:'2,200 m',de:'400m warm-up → 10×100m hard (15s rest) → 600m Z2 → 200m cool-down.'},
+        {d:'Wed',t:'str',tl:'Core B',ty:'25 min — Core',de:'After swim. Dead bug 3×10, Pallof press 3×12, Copenhagen plank 3×30s each, side plank 3×35s, suitcase carry 3×25m.'},
         {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'55 min Zwift',de:'10 min Z2 → 5×(2 min Z5 + 3 min Z1) → 15 min Z2.'},
         {d:'Fri',t:'swim',tl:'Swim — easy',ty:'1,800 m',de:'All Z2. Hard week — flush.'},
         {d:'Sat',t:'brick',tl:'Brick',ty:'2h bike + 20 min run',de:'2h Z2 outdoor → treadmill → 3 min run / 2 min walk × 4.'},
@@ -296,6 +455,7 @@ const ALL = [
       ]},
       { label:'W8 ↩', weekStart:'2026-05-04', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~35m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
+        {d:'Mon',t:'str',tl:'Strength — light',ty:'30 min — Recovery week',de:'Recovery week. Goblet squat 2×10, hip thrust 2×12, plank 2×40s. No more than this.'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'40 min Zwift',de:'Short easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
         {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'45 min Zwift',de:'10 min Z2 → 2×(6 min Z3 + 4 min Z2) → 10 min cool-down.'},
@@ -306,37 +466,46 @@ const ALL = [
     ]
   },
   { num:3, label:'B3 — Build 1', btnCls:'', dates:'May 11 – Jun 7',
-    desc:'<strong>Block 3 — Build 1 (May 11 – Jun 7):</strong> First real volume block. Run/walk moves to 4:2. Long bike hits 2.5–3h outdoors. Swim grows to 2,500m. Brick is now a weekly fixture. Weekly volume ~7–8h.',
+    desc:'<strong>Block 3 — Build 1 (May 11 – Jun 7):</strong> Strength 2–3×/week including Saturday doubles. Increase load.  First real volume block. Run/walk moves to 4:2. Long bike hits 2.5–3h outdoors (early morning — heat starts in June). Swim grows to 2,500m. Brick is now a weekly fixture. Weekly volume ~7–8h.',
     weeks:[
       { label:'W9', weekStart:'2026-05-11', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 50m'},{c:'#1A9E75',l:'Swim ~4,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'4 min run / 2 min walk × 4. First 4:2 session. Easy Z2.'},
+        {d:'Mon',t:'str',tl:'Strength A',ty:'45 min — Build',de:'Build phase starts. Goblet squat 4×8 heavier, RDL 4×8, Bulgarian split squat 3×10 each, hip thrust 4×12, cable row 4×10, Copenhagen plank 3×30s. Increase load from base.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'60 min outdoor',de:'Pure aerobic hour. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,200 m',de:'400m warm-up → 10×100m Z2 (20s rest) → 600m → 200m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'60 min outdoor',de:'15 min Z2 → 2×(10 min Z4 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'25 min — Core',de:'After bike. Dead bug 3×10, Pallof press 3×12, hollow hold 3×25s, side plank 3×35s, bird dog 3×10.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'1,800 m',de:'300m easy → 6×200m at pace (25s rest) → 300m cool-down.'},
         {d:'Sat',t:'brick',tl:'Brick',ty:'2h bike + 25 min run',de:'2h Z2 outdoor → treadmill → 4 min run / 2 min walk × 4.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'70 min treadmill',de:'70 min run/walk. 5 min run / 2 min walk x 8. Biggest run yet — stay aerobic the whole way.'},
       ]},
       { label:'W10', weekStart:'2026-05-18', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4.5h'},{c:'#E24B4A',l:'Run ~2h'},{c:'#1A9E75',l:'Swim ~4,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'35 min treadmill',de:'4 min run / 2 min walk × 5. Easy Z2.'},
+        {d:'Mon',t:'str',tl:'Strength A',ty:'45 min — Build',de:'Goblet squat 4×8, RDL 4×8, single-leg press 4×10 each, hip thrust 4×12, incline push-up 3×15, face pull 3×15. Progressive load.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'65 min outdoor',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×100m hard (15s rest) → 5×100m Z2 → 500m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'60 min outdoor',de:'10 min Z2 → 5×(3 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'25 min — Core',de:'After bike. Copenhagen plank 3×30s each, suitcase carry 3×30m each, V-sit 3×12, side plank 3×40s, clamshell 3×15.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m easy → 8×150m at pace (20s rest) → 400m cool-down.'},
         {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 25 min run',de:'2.5h Z2 outdoor → treadmill → 4 min run / 2 min walk × 4.'},
+        {d:'Sat',t:'str',tl:'Strength — After brick',ty:'30 min — Saturday double',de:'Saturday double — post-brick while legs are warm. Upper body and core only: pull-up or lat pulldown 3×8, face pull 3×15, plank 3×45s, Copenhagen plank 2×30s. No more leg work.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'80 min treadmill',de:'80 min run/walk. 5 min run / 2 min walk x 9. Note how your legs feel after this one.'},
       ]},
       { label:'W11', weekStart:'2026-05-25', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run ~2h 10m'},{c:'#1A9E75',l:'Swim ~4,800m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'35 min treadmill',de:'4 min run / 2 min walk × 5. Load week — stay controlled.'},
+        {d:'Mon',t:'str',tl:'Strength A',ty:'50 min — Load week',de:'Load week — biggest strength session yet. Goblet squat 4×8, RDL 4×8, Bulgarian split squat 4×8 each, hip thrust 4×12, cable row 4×10, push-up 3×20.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'70 min outdoor',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — hard',ty:'2,500 m',de:'500m warm-up → 12×100m hard (15s rest, target sub-2.0) → 400m Z2 → 100m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'60 min Zwift',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 15 min Z2.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'25 min — Core',de:'After bike. Dead bug 3×10, Pallof press 3×15, hollow hold 3×30s, side plank 3×40s, bird dog 3×12.'},
         {d:'Fri',t:'swim',tl:'Swim — easy',ty:'2,000 m',de:'All Z2. Flush and recover.'},
         {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 30 min run',de:'2.5h Z2 outdoor → treadmill → 4 min run / 2 min walk × 5.'},
+        {d:'Sat',t:'str',tl:'Strength — After brick',ty:'30 min — Saturday double',de:'Post-brick upper and core. Lat pulldown 3×10, face pull 3×15, plank 3×45s, dead bug 3×10. Keep it short.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'90 min treadmill',de:'90 min run/walk. First time running 90 minutes. 5 min run / 2 min walk x 10. Milestone — treat it like a mini race.'},
       ]},
       { label:'W12 ↩', weekStart:'2026-06-01', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~35m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
+        {d:'Mon',t:'str',tl:'Strength — light',ty:'30 min — Recovery week',de:'Recovery week. Goblet squat 2×10, hip thrust 2×12, plank 2×45s. Nothing more.'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'40 min Zwift',de:'Easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique focus.'},
         {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'45 min Zwift',de:'10 min Z2 → 2×(6 min Z3 + 4 min Z2) → 10 min cool-down.'},
@@ -347,40 +516,49 @@ const ALL = [
     ]
   },
   { num:4, label:'B4 — Build 2', btnCls:'', dates:'Jun 8 – Jul 5',
-    desc:'<strong>Block 4 — Build 2 (Jun 8 – Jul 5):</strong> Run transitions to continuous Z2 — the key milestone of the plan. Long bike reaches 3h+. Swim adds sighting drills. Weekly volume ~8–9h.',
+    desc:'<strong>Block 4 — Build 2 (Jun 8 – Jul 5):</strong> Strength 2–3×/week — power phase begins (box jumps, heavy compound).  Abu Dhabi peak heat — all bike sessions on Zwift indoors.  Abu Dhabi summer heat — all bike sessions on Zwift indoors.  Run transitions to continuous Z2 — the key milestone of the plan. Long bike reaches 3h+. Swim adds sighting drills. Weekly volume ~8–9h.',
     weeks:[
       { label:'W13', weekStart:'2026-06-08', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run ~2h 10m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — continuous',ty:'25 min treadmill',de:'First fully continuous run. Easy Z2. Slow if needed. Key milestone of the plan.'},
-        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'70 min outdoor',de:'Aerobic base. Z2 throughout.'},
+        {d:'Mon',t:'str',tl:'Strength — Power',ty:'45 min — Power phase',de:'Power phase begins. Box jump 4×5, goblet squat 4×6 heavier, RDL 4×6, single-leg hop 3×8 each, hip thrust 4×10, cable row 4×8. Learn the box jumps — light.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'70 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×150m at pace (20s rest) → 500m cool-down. Sight every 10 strokes.'},
-        {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'65 min outdoor',de:'15 min Z2 → 3×(8 min Z4 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'65 min Zwift',de:'15 min Z2 → 3×(8 min Z4 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'25 min — Core',de:'Dead bug 3×10, Copenhagen plank 3×30s, Pallof press 3×12, hollow hold 3×30s, suitcase carry 3×30m.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m easy → 5×300m at pace (30s rest) → 500m cool-down.'},
-        {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 30 min run',de:'2.5h Z2 outdoor → treadmill → 25 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 30 min run',de:'2.5h Z2 on Zwift → treadmill → 25 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'95 min treadmill',de:'95 min continuous Z2. Slow is fast here. Your longest run to date — go 30 sec/km slower than feels natural.'},
       ]},
       { label:'W14', weekStart:'2026-06-15', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5.5h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — continuous',ty:'30 min treadmill',de:'Easy continuous Z2.'},
-        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'75 min outdoor',de:'Aerobic base. Z2 throughout.'},
+        {d:'Mon',t:'str',tl:'Strength — Power',ty:'45 min — Power phase',de:'Box jump 4×5, goblet squat 4×6, RDL 4×6, Bulgarian split squat 4×6 each, hip thrust 4×10, pull-up 3×max or lat pulldown 3×8.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'75 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at pace (30s rest) → 500m cool-down. Sight practice.'},
-        {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'65 min outdoor',de:'10 min Z2 → 6×(3 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'65 min Zwift',de:'10 min Z2 → 6×(3 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'25 min — Core',de:'After bike. Copenhagen plank 3×35s, dead bug 3×10, Pallof press 3×15, side plank 3×40s, bird dog 3×12.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m easy → 10×150m hard (20s rest) → 500m cool-down.'},
-        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 30 min run',de:'3h Z2 outdoor → treadmill → 25 min continuous Z2 + 5 min walk. First 3h ride.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 30 min run',de:'3h Z2 on Zwift → treadmill → 25 min continuous Z2 + 5 min walk. First 3h ride.'},
+        {d:'Sat',t:'str',tl:'Strength — After brick',ty:'30 min — Saturday double',de:'Post-brick upper and core. Lat pulldown 3×8, face pull 3×15, push-up 3×20, plank 3×50s.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'105 min treadmill',de:'105 min continuous Z2. 1h 45m of running. Real 70.3 long run territory — stay controlled throughout.'},
       ]},
       { label:'W15', weekStart:'2026-06-22', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run ~2h 45m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — continuous',ty:'30 min treadmill',de:'Easy Z2. Load week — keep running conservative.'},
-        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'80 min outdoor',de:'Aerobic base. Z2 throughout.'},
+        {d:'Mon',t:'str',tl:'Strength — Power',ty:'45 min — Load week',de:'Load week — biggest power session of Build 2. Box jump 4×5, squat 4×5 heavy, RDL 4×5, single-leg hop 3×8, hip thrust 4×10, cable row 4×8.'},
+        {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'80 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — hard',ty:'3,000 m',de:'500m warm-up → 10×200m hard (25s rest) → 500m cool-down. First 3,000m session.'},
-        {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'65 min outdoor',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 20 min Z2.'},
+        {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'65 min Zwift',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 20 min Z2.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'25 min — Core',de:'Copenhagen plank 3×35s, hollow hold 3×30s, Pallof press 3×15, side plank 3×45s, dead bug 3×10.'},
         {d:'Fri',t:'swim',tl:'Swim — easy',ty:'2,000 m',de:'All Z2. Flush and recover.'},
-        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 35 min run',de:'3h Z2 outdoor → treadmill → 30 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 35 min run',de:'3h Z2 on Zwift → treadmill → 30 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'str',tl:'Strength — After brick',ty:'30 min — Saturday double',de:'Post-brick. Pull-up 3×max, face pull 3×15, plank 3×50s, suitcase carry 3×30m.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'100 min treadmill',de:'100 min continuous Z2. Load week — keep effort truly easy. Building the aerobic base that carries you through the race run.'},
       ]},
       { label:'W16 ↩', weekStart:'2026-06-29', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2.5h'},{c:'#E24B4A',l:'Run ~40m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week. Continuous running achieved. 3h+ bike done.',cl:'rest'},
+        {d:'Mon',t:'str',tl:'Strength — light',ty:'30 min — Recovery week',de:'Recovery week. Box jump 2×4, goblet squat 2×8, hip thrust 2×10, plank 2×40s.'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'45 min Zwift',de:'Easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
-        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'50 min outdoor',de:'10 min Z2 → 2×(8 min Z3 + 4 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'50 min Zwift',de:'10 min Z2 → 2×(8 min Z3 + 4 min Z2) → 10 min cool-down.'},
         {d:'Fri',t:'run',tl:'Run — easy',ty:'20 min treadmill',de:'Easy continuous Z2.'},
         {d:'Sat',t:'bike',tl:'Bike — TEST',ty:'20 min max effort',de:'10 min Z2 → 20 min maximal effort → cool-down. Fourth test.'},
         {d:'Sun',t:'swim',tl:'Swim',ty:'1,000 m',de:'Easy Z2. Close out the block.'},
@@ -388,40 +566,48 @@ const ALL = [
     ]
   },
   { num:5, label:'B5 — Race-Specific 1', btnCls:'peak', dates:'Jul 6 – Aug 2',
-    desc:'<strong>Block 5 — Race-Specific 1 (Jul 6 – Aug 2):</strong> Sessions start mimicking race conditions. Long brick 3h+ bike + 45 min run. Swim includes full 1,900m race-distance efforts. July Abu Dhabi heat — outdoor riding before 7am only. Weekly volume ~9–10h.',
+    desc:'<strong>Block 5 — Race-Specific 1 (Jul 6 – Aug 2):</strong> Strength 2×/week — race-specific. Single-leg focus, run mechanics.  Sessions start mimicking race conditions. Long brick 3h+ bike + 45 min run. Swim includes full 1,900m race-distance efforts. July–August Abu Dhabi peak heat (40–48°C) — all riding on Zwift. No outdoor cycling. Weekly volume ~9–10h.',
     weeks:[
       { label:'W17', weekStart:'2026-07-06', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run ~2h 40m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'35 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Mon',t:'str',tl:'Strength — Race',ty:'40 min — Race-specific',de:'Race-specific strength. Single-leg squat 4×8 each, RDL 4×6, box jump 3×5, hip thrust 4×10, lat pulldown 3×10, Copenhagen plank 3×35s. Running mechanics emphasis.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'80 min Zwift',de:'Zwift for midweek — Abu Dhabi July heat. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'70 min Zwift',de:'15 min Z2 → 3×(10 min Z4 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'20 min — Core',de:'After bike. Pallof press 3×12, dead bug 3×10, hollow hold 3×25s, side plank 3×35s. Quick.'},
         {d:'Fri',t:'swim',tl:'Swim — race sim',ty:'1,900 m',de:'300m warm-up → 1,900m continuous at race effort → 200m cool-down. Note your time.'},
-        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 40 min run',de:'3h Z2 outdoor (pre-7am) → treadmill → 35 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 40 min run',de:'3h Z2 on Zwift → treadmill → 35 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'105 min treadmill',de:'105 min Z2. Race-specific block. Your long run is now close to race duration — every minute past 90 is confidence in the bank.'},
       ]},
       { label:'W18', weekStart:'2026-07-13', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 30m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'35 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Mon',t:'str',tl:'Strength — Race',ty:'40 min — Race-specific',de:'Single-leg squat 4×8 each, RDL 4×6, box jump 3×5, hip thrust 4×10, pull-up 3×max, plank 3×50s.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'85 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×200m at pace (25s rest) → 500m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'70 min Zwift',de:'10 min Z2 → 6×(4 min Z4 + 3 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'20 min — Core',de:'Pallof press 3×12, Copenhagen plank 3×30s, dead bug 3×10, hollow hold 3×25s.'},
         {d:'Fri',t:'swim',tl:'Swim — race sim',ty:'1,900 m',de:'Continuous 1,900m at race effort. No warm-up — simulate open-water race start.'},
-        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 40 min run',de:'3.5h Z2 outdoor (pre-7am) → treadmill → 35 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 40 min run',de:'3.5h Z2 on Zwift → treadmill → 35 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'str',tl:'Strength — After brick',ty:'25 min — Saturday double',de:'Post-brick. Face pull 3×15, lat pulldown 3×10, plank 3×50s.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'115 min treadmill',de:'115 min Z2. 1h 55m of running. Your longest run of the plan so far — go slow, stay aerobic, finish strong.'},
       ]},
       { label:'W19', weekStart:'2026-07-20', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~6,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Load week — keep all runs controlled.'},
+        {d:'Mon',t:'str',tl:'Strength — Race',ty:'40 min — Load week',de:'Last heavy session of Block 5. Single-leg squat 4×8, RDL 4×6, box jump 3×5, hip thrust 4×10, cable row 4×8, Copenhagen plank 3×35s.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — hard',ty:'3,000 m',de:'500m warm-up → 10×200m hard (25s rest) → 500m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'70 min Zwift',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 20 min Z2.'},
+        {d:'Thu',t:'str',tl:'Core B',ty:'20 min — Core',de:'Copenhagen plank 3×30s, Pallof press 3×12, dead bug 3×10, side plank 3×35s.'},
         {d:'Fri',t:'swim',tl:'Swim — easy',ty:'2,500 m',de:'All Z2. Flush and recover.'},
-        {d:'Sat',t:'brick',tl:'Brick — peak',ty:'3.5h bike + 45 min run',de:'3.5h Z2 outdoor → treadmill → 40 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'brick',tl:'Brick — peak',ty:'3.5h bike + 45 min run',de:'3.5h Z2 on Zwift → treadmill → 40 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — Z2',ty:'75 min treadmill',de:'75 min easy Z2. Recovery run after peak brick — shorter than your long run but still meaningful time on feet.'},
       ]},
       { label:'W20 ↩', weekStart:'2026-07-27', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~45m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week. Race-distance swims and 3.5h+ bricks done.',cl:'rest'},
+        {d:'Mon',t:'str',tl:'Strength — light',ty:'25 min — Recovery week',de:'Recovery week. Goblet squat 2×8, hip thrust 2×10, plank 2×40s.'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'50 min Zwift',de:'Short easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Easy. Technique only.'},
-        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'55 min outdoor',de:'10 min Z2 → 2×(10 min Z3 + 5 min Z2) → 10 min cool-down.'},
+        {d:'Thu',t:'bike',tl:'Bike — tempo',ty:'55 min Zwift',de:'10 min Z2 → 2×(10 min Z3 + 5 min Z2) → 10 min cool-down.'},
         {d:'Fri',t:'run',tl:'Run — easy',ty:'25 min treadmill',de:'Easy continuous Z2.'},
         {d:'Sat',t:'bike',tl:'Bike — TEST',ty:'20 min max effort',de:'10 min Z2 → 20 min maximal effort → cool-down. Fifth test.'},
         {d:'Sun',t:'swim',tl:'Swim',ty:'1,000 m',de:'Easy Z2. Close out the block.'},
@@ -429,33 +615,36 @@ const ALL = [
     ]
   },
   { num:6, label:'B6 — Peak', btnCls:'peak', dates:'Aug 3 – Sep 14',
-    desc:'<strong>Block 6 — Peak (Aug 3 – Sep 14):</strong> 6 weeks. Peak volume ~10–11h/week. Long brick reaches 4h bike + 60 min run. W24 is the full race rehearsal: swim 1.9k → bike 60k → run 10k non-stop. Recovery week at W26 before taper.',
+    desc:'<strong>Block 6 — Peak (Aug 3 – Sep 14):</strong> Strength 1×/week maintenance only — no new load, preserve gains.  Still extreme heat — all bike sessions on Zwift.  6 weeks. Peak volume ~10–11h/week. Long brick reaches 4h bike + 60 min run. W24 is the full race rehearsal: swim 1.9k → bike 60k → run 10k non-stop. Recovery week at W26 before taper.',
     weeks:[
       { label:'W21', weekStart:'2026-08-03', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 25m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy continuous Z2. Start of peak block.'},
+        {d:'Mon',t:'str',tl:'Strength — Maintain',ty:'30 min — Maintenance',de:'Peak block. Maintenance only — no fatigue. Single-leg squat 3×8 each, hip thrust 3×10, lat pulldown 3×10, Copenhagen plank 3×30s. Purpose: preserve the strength you built.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'75 min Zwift',de:'15 min Z2 → 3×(10 min Z4 + 5 min Z2) → 10 min cool-down.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'3,000 m',de:'500m easy → 10×200m hard (25s rest) → 500m cool-down.'},
-        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 50 min run',de:'3.5h Z2 outdoor (pre-7am) → treadmill → 45 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 50 min run',de:'3.5h Z2 on Zwift → treadmill → 45 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'115 min treadmill',de:'115 min Z2. Peak block long run — this is what gives you confidence your legs can run 21 km off the bike.'},
       ]},
       { label:'W22', weekStart:'2026-08-10', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 50m'},{c:'#1A9E75',l:'Swim ~6,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy continuous Z2.'},
+        {d:'Mon',t:'str',tl:'Strength — Maintain',ty:'30 min — Maintenance',de:'Maintenance. RDL 3×8, hip thrust 3×10, push-up 3×15, plank 3×45s.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — race sim',ty:'1,900 m',de:'300m warm-up → 1,900m continuous at race effort → 200m cool-down. Note your time.'},
         {d:'Thu',t:'bike',tl:'Bike — Intervals',ty:'75 min Zwift',de:'10 min Z2 → 6×(4 min Z4 + 3 min Z2) → 15 min cool-down.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'3,000 m',de:'500m easy → 5×400m at pace (35s rest) → 500m cool-down.'},
-        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 55 min run',de:'3.5h Z2 outdoor → treadmill → 50 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 55 min run',de:'3.5h Z2 on Zwift → treadmill → 50 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'130 min treadmill',de:'130 min Z2. 2h 10m — your peak long run. Go very slow. If you finish feeling you had more left, you nailed it. Race-proof.'},
       ]},
       { label:'W23', weekStart:'2026-08-17', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Peak week approaching — keep everything controlled.'},
+        {d:'Mon',t:'str',tl:'Strength — Maintain',ty:'30 min — Maintenance',de:'Maintenance. Single-leg squat 3×8, hip thrust 3×10, lat pulldown 3×10, dead bug 3×10.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — VO2',ty:'70 min Zwift',de:'10 min Z2 → 6×(2 min Z5 + 3 min Z1) → 20 min Z2.'},
         {d:'Fri',t:'swim',tl:'Swim — easy',ty:'2,500 m',de:'All Z2. Preparation for Saturday. Eat well, rest well.'},
-        {d:'Sat',t:'brick',tl:'Brick — peak',ty:'4h bike + 60 min run',de:'4h Z2 outdoor → treadmill → 55 min continuous Z2 + 5 min walk. Peak brick of the entire plan.'},
+        {d:'Sat',t:'brick',tl:'Brick — peak',ty:'4h bike + 60 min run',de:'4h Z2 on Zwift → treadmill → 55 min continuous Z2 + 5 min walk. Peak brick of the entire plan.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'110 min treadmill',de:'110 min easy Z2. Pre-rehearsal week — controlled, not heroic. Save the legs for Saturday race sim.'},
       ]},
       { label:'W24 — Rehearsal', weekStart:'2026-08-24', wCls:'rehearsal', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 15m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
@@ -469,11 +658,12 @@ const ALL = [
       ]},
       { label:'W25', weekStart:'2026-08-31', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 35m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Back to normal after rehearsal.'},
+        {d:'Mon',t:'str',tl:'Strength — Final',ty:'30 min — Last session',de:'Final strength session of the entire plan. Single-leg squat 3×8, hip thrust 3×10, plank 3×45s. After this, no more strength until after the race.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'85 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace → 500m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — Threshold',ty:'75 min Zwift',de:'15 min Z2 → 3×(10 min Z4 + 5 min Z2) → 10 min cool-down.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'3,000 m',de:'500m easy → 10×200m hard (25s rest) → 500m cool-down.'},
-        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 55 min run',de:'3.5h Z2 outdoor → treadmill → 50 min continuous Z2 + 5 min walk.'},
+        {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 55 min run',de:'3.5h Z2 on Zwift → treadmill → 50 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'125 min treadmill',de:'125 min Z2. Second peak long run. 2h 05m of running — you now know what race day will ask of your legs.'},
       ]},
       { label:'W26 ↩', weekStart:'2026-09-07', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2.5h'},{c:'#E24B4A',l:'Run ~45m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
@@ -488,10 +678,11 @@ const ALL = [
     ]
   },
   { num:7, label:'B7 — Taper + Race', btnCls:'taper', dates:'Sep 15 – Dec race day',
-    desc:'<strong>Block 7 — Taper + Race (Sep 15 – Dec):</strong> Volume drops ~40% over 3 weeks, intensity maintained. Final 2 weeks: nothing new, nothing long. Race week is minimal. Trust the 38 weeks of work.',
+    desc:'<strong>Block 7 — Taper + Race (Sep 15 – Dec):</strong> Strength 1× in W27 only, then stop completely.  Heat easing through October. Short outdoor rides optional from mid-October onwards. Volume drops ~40% over 3 weeks, intensity maintained. Final 2 weeks: nothing new, nothing long. Race week is minimal. Trust the 38 weeks of work.',
     weeks:[
       { label:'W27 — Taper 1', weekStart:'2026-09-14', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~3,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'30 min treadmill',de:'Easy Z2. Volume drops — don\'t panic. Freshness is the goal now.'},
+        {d:'Mon',t:'str',tl:'Strength — Taper',ty:'20 min — Taper',de:'Taper strength. Very light: goblet squat 2×8, hip thrust 2×10, plank 2×40s. Maintain feel, not load. Last strength session before race.'},
         {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'60 min Zwift',de:'Z2 with 3×5 min Z3 bursts. Keep legs sharp.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m warm-up → 6×200m at race pace (30s rest) → 400m cool-down.'},
         {d:'Thu',t:'bike',tl:'Bike — sharp',ty:'55 min Zwift',de:'15 min Z2 → 4×(5 min Z4 + 3 min Z2) → 10 min cool-down. Intensity maintained.'},
@@ -501,18 +692,18 @@ const ALL = [
       ]},
       { label:'W28 — Taper 2', weekStart:'2026-09-21', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~2,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'25 min treadmill',de:'Easy Z2. Legs should start feeling fresh.'},
-        {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'50 min Zwift',de:'10 min Z2 → 3×(5 min Z4 + 3 min Z2) → 12 min cool-down.'},
+        {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'50 min Zwift/outdoor',de:'10 min Z2 → 3×(5 min Z4 + 3 min Z2) → 12 min cool-down.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'1,500 m',de:'300m warm-up → 6×150m at race pace (20s rest) → 300m cool-down.'},
-        {d:'Thu',t:'bike',tl:'Bike — Z2',ty:'50 min Zwift',de:'Easy Z2 spin. Keep the legs turning.'},
+        {d:'Thu',t:'bike',tl:'Bike — Z2',ty:'50 min Zwift/outdoor',de:'Easy Z2 spin. Keep the legs turning.'},
         {d:'Fri',t:'swim',tl:'Swim',ty:'1,000 m',de:'200m easy → 4×100m at race pace → 200m cool-down.'},
         {d:'Sat',t:'brick',tl:'Brick — short',ty:'90 min bike + 20 min run',de:'90 min Z2 → treadmill → 15 min Z2 + 5 min walk. Race-feel without the fatigue.'},
         {d:'Sun',t:'run',tl:'Run — Z2',ty:'55 min treadmill',de:'55 min easy Z2. Two weeks from race day — last run of meaningful length. Comfortable and confident.'},
       ]},
       { label:'W29 — Race -2wks', weekStart:'2026-09-28', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~40m'},{c:'#1A9E75',l:'Swim ~1,500m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Nothing new from this week. No new routes, no new gear, no experiments.',cl:'rest'},
-        {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'40 min Zwift',de:'10 min Z2 → 2×(5 min Z4 + 3 min Z2) → 12 min cool-down.'},
+        {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'40 min Zwift/outdoor',de:'10 min Z2 → 2×(5 min Z4 + 3 min Z2) → 12 min cool-down.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'1,000 m',de:'200m easy → 3×200m at race pace → 200m cool-down. Feel fast, don\'t work hard.'},
-        {d:'Thu',t:'bike',tl:'Bike — easy',ty:'40 min Zwift',de:'Easy Z2. Legs should feel light and snappy.'},
+        {d:'Thu',t:'bike',tl:'Bike — easy',ty:'40 min Zwift/outdoor',de:'Easy Z2. Legs should feel light and snappy.'},
         {d:'Fri',t:'run',tl:'Run — easy',ty:'20 min treadmill',de:'Easy Z2. Short. Keep the rhythm.'},
         {d:'Sat',t:'brick',tl:'Brick — very short',ty:'60 min bike + 15 min run',de:'60 min easy Z2 → 15 min easy run. Just reminding the body of the transition.'},
         {d:'Sun',t:'rest',tl:'Rest',ty:'Full rest',de:'Rest. Pack your race bag. Check your gear.',cl:'rest'},
@@ -530,129 +721,138 @@ const ALL = [
   },
 ];
 
-let curBlock = 1, curWeek = 0;
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const T = {bike:'tag-bike',run:'tag-run',swim:'tag-swim',brick:'tag-brick',rest:'tag-rest',race:'tag-race',done:'tag-done'};
+const DO = {Mon:0,Tue:1,Wed:2,Thu:3,Fri:4,Sat:5,Sun:6};
+const BIKE_TYPES = ['Ride','Virtual Ride','EBikeRide','IndoorCycling','Cycling','MountainBikeRide','GravelRide'];
+const RUN_TYPES  = ['Run','Virtual Run'];
+const RACE_DATE  = new Date('2026-12-06');
+const PLAN_START = '2026-03-16';
 
+const EXPECTED_CTL = {1:4,2:7,3:10,4:8,5:12,6:16,7:20,8:15,9:22,10:27,11:32,12:24,13:32,14:38,15:44,16:34,17:42,18:49,19:56,20:44,21:54,22:62,23:68,24:65,25:70,26:58,27:52,28:44,29:36,30:20};
+
+// ── TYPE HELPERS ─────────────────────────────────────────────────────────────
+const isBike = a => BIKE_TYPES.includes(a.type) || (a.type||'').toLowerCase().includes('ride') || (a.type||'').toLowerCase().includes('cycl');
+const isRun  = a => RUN_TYPES.includes(a.type) || (a.type||'').toLowerCase().includes('run') || (a.type||'').toLowerCase().includes('treadmill');
+const isSwim = a => a.type === 'Swim';
+const isTraining = a => isBike(a) || isRun(a) || isSwim(a);
+
+// ── DATE HELPERS ─────────────────────────────────────────────────────────────
+function today() {
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function localDate(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function localDateStr(d) { return localDate(d); } // alias kept for compatibility
+function addDays(dateStr, n) {
+  const d = new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n); return localDate(d);
+}
+function wkKey(dateStr) {
+  const d = new Date(dateStr);
+  const jan1 = new Date(d.getFullYear(),0,1);
+  return d.getFullYear()+'-W'+String(Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7)).padStart(2,'0');
+}
+function weeksToRace() { return Math.round((RACE_DATE - new Date()) / 86400000 / 7); }
+
+// ── PLAN NAVIGATION ──────────────────────────────────────────────────────────
 function renderBlockNav() {
   document.getElementById('block-nav').innerHTML = ALL.map((b,i) =>
-    `<button class="blk-btn ${b.btnCls||''} ${i===1?'active':''}" onclick="selectBlock(${i},this)">${b.label}</button>`
+    `<button class="blk-btn ${b.btnCls||''} ${i===curBlock?'active':''}" onclick="selectBlock(${i},this)">${b.label}</button>`
   ).join('');
 }
-
 function selectBlock(i, btn) {
   document.querySelectorAll('.blk-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   curBlock = i; curWeek = 0;
   renderWeekNav(); renderWeek(); renderVerdict();
 }
-
 function selectWeek(i, btn) {
   document.querySelectorAll('.wk-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   curWeek = i; renderWeek();
 }
-
 function renderWeekNav() {
   const b = ALL[curBlock];
   document.getElementById('block-desc-area').innerHTML = `<div class="block-desc">${b.desc}</div>`;
-  document.getElementById('week-nav').innerHTML = b.weeks.map((w,i) =>
-    `<button class="wk-btn ${w.wCls||''} ${i===0?'active':''}" onclick="selectWeek(${i},this)">${w.label}</button>`
-  ).join('');
+  document.getElementById('week-nav').innerHTML = b.weeks.map((w,i) => {
+    // Strip ↩ and add SVG icon instead; flag race rehearsal and race week
+    const isRec  = w.label.includes('↩') || w.wCls === 'recovery';
+    const isRace = w.wCls === 'raceweek' || w.label.toLowerCase().includes('race');
+    const rawLabel = w.label.replace('↩','').trim();
+    let prefix = '';
+    if (isRace)     prefix = icon('flag', 11, 'var(--gold)') + '&nbsp;';
+    else if (isRec) prefix = icon('clock', 11, '#3d5270') + '&nbsp;';
+    return `<button class="wk-btn ${w.wCls||''} ${i===0?'active':''}" onclick="selectWeek(${i},this)">${prefix}${rawLabel}</button>`;
+  }).join('');
 }
 
-// ── Day offset map ──────────────────────────────────────────────────────────
-const DAY_OFF = {Mon:0,Tue:1,Wed:2,Thu:3,Fri:4,Sat:5,Sun:6};
-
-function localDateStr(d) {
-  // Returns YYYY-MM-DD in local time (not UTC)
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return y+'-'+m+'-'+day;
-}
-
+// ── ACTUALS LOOKUP ───────────────────────────────────────────────────────────
 function getActualsForWeek(weekStart) {
   if (!weekStart || !ACTS.length) return {};
-  const base = new Date(weekStart+'T00:00:00'); // parse as local midnight
   const byDate = {};
-  ACTS.forEach(a => { if(!byDate[a.date]) byDate[a.date]=[]; byDate[a.date].push(a); });
+  ACTS.forEach(a => { (byDate[a.date] = byDate[a.date]||[]).push(a); });
   const result = {};
   for (let i=0; i<7; i++) {
-    const d = new Date(base); d.setDate(base.getDate()+i);
-    const iso = localDateStr(d);
+    const iso = addDays(weekStart, i);
     if (byDate[iso]) result[i] = byDate[iso];
   }
   return result;
 }
 
-function dayOffset(dayStr) {
-  const name = dayStr.slice(0,3);
-  return DAY_OFF[name] ?? -1;
-}
-
 function fmtActual(acts) {
-  // Merge multiple activities on same day
+  const dist  = acts.reduce((s,x)=>s+(x.dist||0),0);
+  const mins  = acts.reduce((s,x)=>s+(x.min||0),0);
+  const wHrs  = acts.filter(x=>x.watts);
+  const hHrs  = acts.filter(x=>x.hr);
+  const avgW  = wHrs.length ? Math.round(wHrs.reduce((s,x)=>s+x.watts,0)/wHrs.length) : null;
+  const avgHR = hHrs.length ? Math.round(hHrs.reduce((s,x)=>s+x.hr,0)/hHrs.length) : null;
+  const effort= Math.round(acts.reduce((s,x)=>s+(x.effort||0),0));
   const a = acts[0];
-  const isBk = ['Ride','Virtual Ride'].includes(a.type);
-  const isRn = ['Run','Virtual Run'].includes(a.type);
-  const isSw = a.type === 'Swim';
-
   const parts = [];
-  const totalDist = acts.reduce((s,x)=>s+(x.dist||0),0);
-  const totalMin  = acts.reduce((s,x)=>s+(x.min||0),0);
-  const avgHR     = acts.filter(x=>x.hr).length ? Math.round(acts.reduce((s,x)=>s+(x.hr||0),0)/acts.filter(x=>x.hr).length) : null;
-  const avgW      = acts.filter(x=>x.watts).length ? Math.round(acts.reduce((s,x)=>s+(x.watts||0),0)/acts.filter(x=>x.watts).length) : null;
-  const totEffort = Math.round(acts.reduce((s,x)=>s+(x.effort||0),0));
-
-  if (totalDist > 0) parts.push(totalDist.toFixed(1)+' km');
-  parts.push(Math.round(totalMin)+' min');
-
-  if (isBk && avgW)  parts.push(avgW+'W avg');
-  if (avgHR)         parts.push(avgHR+' bpm');
-
-  if (isRn && totalDist > 0 && totalMin > 0) {
-    const pace = (totalMin/totalDist).toFixed(1);
-    parts.push(pace+' min/km');
-  }
-  if (isSw && totalDist > 0 && totalMin > 0) {
-    const pace = (totalMin/totalDist/10).toFixed(1);
-    parts.push(pace+' min/100m');
-  }
-  if (totEffort > 0) parts.push('effort '+totEffort);
-
-  const typeLabel = acts.map(x=>x.type).join(' + ');
-  return { typeLabel, metrics: parts.join(' · ') };
+  if (dist > 0) parts.push(dist.toFixed(1)+' km');
+  parts.push(Math.round(mins)+' min');
+  if (isBike(a) && avgW) parts.push(avgW+'W avg');
+  if (avgHR) parts.push(avgHR+' bpm');
+  if (isRun(a) && dist > 0) parts.push((mins/dist).toFixed(1)+' min/km');
+  if (isSwim(a) && dist > 0) parts.push((mins/dist/10).toFixed(1)+' min/100m');
+  if (effort > 0) parts.push('effort '+effort);
+  return { typeLabel: acts.map(x=>x.type).join(' + '), metrics: parts.join(' · ') };
 }
 
+// ── WEEK RENDER ──────────────────────────────────────────────────────────────
 function renderWeek() {
   const w = ALL[curBlock].weeks[curWeek];
+  const isPastBlock = ALL[curBlock].num === 0;
   document.getElementById('vol-row').innerHTML = w.vol.map(v =>
     `<div class="vol-pill"><span class="vol-dot" style="background:${v.c}"></span>${v.l}</div>`
   ).join('');
 
-  const actuals = IS_LIVE ? getActualsForWeek(w.weekStart) : {};
-  const today = localDateStr(new Date());
+  const actuals = IS_LIVE && !isPastBlock ? getActualsForWeek(w.weekStart) : {};
+  const td = today();
+  const mult = IS_LIVE && w.weekStart > td ? getAdaptMultiplier() : 1.0;
 
-  document.getElementById('week-display').innerHTML = `<div class="days-grid">${w.days.map(d => {
-    const off = dayOffset(d.d);
-    const acts = (off >= 0 && actuals[off]) ? actuals[off] : null;
-    const iso  = w.weekStart ? (() => { const b=new Date(w.weekStart+'T00:00:00'); b.setDate(b.getDate()+off); return localDateStr(b); })() : null;
-    const isToday = iso === today;
-    const isPast  = iso && iso < today;
+  document.getElementById('week-display').innerHTML = `<div class="days-grid">${w.days.map((d,i) => {
+    const off = DO[d.d.slice(0,3)] ?? -1;
+    const acts = off >= 0 ? actuals[off] : null;
+    const iso  = w.weekStart ? addDays(w.weekStart, off) : null;
+    const isToday = iso === td;
+    const isPast  = iso && iso < td;
+    const todayMark = isToday ? ' <span style="color:var(--accent);font-size:9px;font-weight:700;">TODAY</span>' : '';
 
     if (acts) {
-      // Split card — plan left, actual right
       const fmt = fmtActual(acts);
-      const cardCls = isToday ? 'day-card today' : 'day-card done';
-      return `<div class="${cardCls}" style="min-height:148px;padding:8px;">
-        <div class="day-name" style="margin-bottom:5px;">${d.d}${isToday?' <span style=\'color:#1a6fc4\'>TODAY</span>':''}</div>
+      return `<div class="day-card${isToday?' today':' done'}" style="min-height:148px;padding:8px;">
+        <div class="day-name" style="margin-bottom:5px;">${d.d}${todayMark}</div>
         <div style="display:grid;grid-template-columns:55% 45%;gap:6px;height:calc(100% - 22px);">
           <div style="border-right:1px solid rgba(255,255,255,0.06);padding-right:6px;">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:.1em;color:#3d5270;margin-bottom:3px;">PLAN</div>
-            <span class="tag ${T[d.t]}" style="margin-bottom:3px;">${d.tl}</span>
+            <div class="split-lbl">PLAN</div>
+            <span class="tag ${T[d.t]}">${d.tl}</span>
             <div style="font-size:10px;font-weight:500;color:#6b82a0;line-height:1.35;">${d.ty}</div>
           </div>
           <div style="padding-left:2px;">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:.1em;color:#0e7c65;margin-bottom:3px;">ACTUAL</div>
+            <div class="split-lbl" style="color:#2176c7;">ACTUAL</div>
             <div style="font-size:9px;font-weight:600;color:#3db89a;margin-bottom:3px;">${fmt.typeLabel}</div>
             <div style="font-size:9px;color:#6b82a0;line-height:1.55;">${fmt.metrics.split(' · ').join('<br>')}</div>
           </div>
@@ -660,905 +860,845 @@ function renderWeek() {
       </div>`;
     }
 
-    // Normal card — check compliance (skip for PAST block)
-    const isPastBlock = ALL[curBlock].num === 0;
-    const isMissed = isPast && d.t !== 'rest' && IS_LIVE && !acts && !isPastBlock;
-    // Check type mismatch
-    const isWrong = isPast && d.t !== 'rest' && IS_LIVE && acts && !isPastBlock && (() => {
-      const planType = d.t;
-      return !acts.some(a => {
-        if (planType === 'bike')  return ['Ride','Virtual Ride'].includes(a.type);
-        if (planType === 'run')   return ['Run','Virtual Run'].includes(a.type);
-        if (planType === 'swim')  return a.type === 'Swim';
-        if (planType === 'brick') return ['Ride','Virtual Ride'].includes(a.type);
-        return true;
-      });
-    })();
+    const isMissed = isPast && d.t !== 'rest' && IS_LIVE && !isPastBlock;
+    const isWrong  = false; // no activity so can't be wrong type
+    const missedStyle = isMissed ? 'border:1px solid #c0392b;border-left:2px solid #c0392b;' : '';
+    const missedBadge = isMissed ? '<span style="float:right;color:#c0392b;font-size:12px;font-weight:700;line-height:1;">✕</span>' : '';
+    const pastCls = isPast && d.t !== 'rest' && !isPastBlock ? ' past' : '';
+    const adaptedTy = mult !== 1.0 && d.t !== 'rest' ? adaptDuration(d.ty, mult) : d.ty;
+    const adaptMark = '';  // silent adaptation
 
-    let extraStyle = '';
-    let missedBadge = '';
-    if (isMissed) {
-      extraStyle = 'border:1px solid #c0392b;border-left:2px solid #c0392b;';
-      missedBadge = '<span style="float:right;color:#c0392b;font-size:12px;font-weight:700;line-height:1;">✕</span>';
-    } else if (isWrong) {
-      extraStyle = 'border:1px solid rgba(192,57,43,0.5);border-left:2px solid rgba(192,57,43,0.5);';
-      missedBadge = '<span style="float:right;color:rgba(192,57,43,0.7);font-size:10px;font-weight:700;line-height:1;">≠</span>';
-    }
-
-    const extraCls = d.cl ? ' '+d.cl : (isPast && d.t!=='rest' ? ' past' : '');
-    const cardCls2 = 'day-card' + extraCls + (isToday ? ' today' : '');
-    return `<div class="${cardCls2}" style="${extraStyle}">
-      <div class="day-name">${missedBadge}${d.d}${isToday?' <span style=\"color:#1a6fc4\">TODAY</span>':''}</div>
+    return `<div class="day-card${d.cl?' '+d.cl:''}${pastCls}${isToday?' today':''}" style="${missedStyle}">
+      <div class="day-name">${missedBadge}${d.d}${todayMark}</div>
       <span class="tag ${T[d.t]}">${d.tl}</span>
-      <div class="day-type">${d.ty}</div>
+      <div class="day-type">${adaptedTy}</div>
       <div class="day-detail">${d.de}</div>
     </div>`;
   }).join('')}</div>`;
 }
 
-// ── PAGE LOAD (see bottom of script) ─────────────────────────────────────────
-
-// ── EXPECTED CTL CURVE ───────────────────────────────────────────────────────
-// Maps week number (1-30) to expected CTL at end of that week
-const EXPECTED_CTL = {
-  1:4, 2:7, 3:10, 4:8,
-  5:12, 6:16, 7:20, 8:15,
-  9:22, 10:27, 11:32, 12:24,
-  13:32, 14:38, 15:44, 16:34,
-  17:42, 18:49, 19:56, 20:44,
-  21:54, 22:62, 23:68, 24:65,
-  25:70, 26:58,
-  27:52, 28:44, 29:36, 30:20
-};
-
-// ── COMPLIANCE ANALYSIS ──────────────────────────────────────────────────────
+// ── COMPLIANCE ───────────────────────────────────────────────────────────────
 function getComplianceData() {
   if (!IS_LIVE) return null;
-  const today = localDateStr(new Date());
-  const actDates = new Set(ACTS.map(a => a.date));
-  const actByDate = {};
-  ACTS.forEach(a => { if(!actByDate[a.date]) actByDate[a.date]=[]; actByDate[a.date].push(a); });
-
-  let planned=0, completed=0, missed=0, wrong=0;
-  // Look at all past planned days across all blocks (skip PAST block)
+  const td = today();
+  const byDate = {};
+  ACTS.forEach(a => { (byDate[a.date]=byDate[a.date]||[]).push(a); });
+  let planned=0, completed=0, missed=0;
   ALL.forEach(block => {
-    if (block.num === 0) return; // PAST block — assumed compliant
+    if (block.num === 0) return;
     block.weeks.forEach(week => {
       if (!week.weekStart) return;
       week.days.forEach((day, i) => {
-        const base = new Date(week.weekStart);
-        base.setDate(base.getDate() + i);
-        const iso = base.toISOString().slice(0,10);
-        if (iso >= today) return; // skip future
-        if (day.t === 'rest') return; // skip rest days
+        const iso = addDays(week.weekStart, i);
+        if (iso >= td || day.t === 'rest') return;
         planned++;
-        const acts = actByDate[iso];
-        if (!acts || acts.length === 0) {
-          missed++;
-        } else {
-          // Check type match
-          const planType = day.t;
-          const hasMatch = acts.some(a => {
-            if (planType === 'bike') return ['Ride','Virtual Ride'].includes(a.type);
-            if (planType === 'run')  return ['Run','Virtual Run'].includes(a.type);
-            if (planType === 'swim') return a.type === 'Swim';
-            if (planType === 'brick') return ['Ride','Virtual Ride'].includes(a.type);
-            return true;
-          });
-          if (hasMatch) completed++; else { completed++; wrong++; }
-        }
+        const acts = byDate[iso];
+        if (!acts || !acts.length) { missed++; return; }
+        const match = acts.some(a => {
+          if (day.t==='bike'||day.t==='brick') return BIKE_TYPES.includes(a.type);
+          if (day.t==='run') return RUN_TYPES.includes(a.type);
+          if (day.t==='swim') return a.type==='Swim';
+          return true;
+        });
+        if (match) completed++; else completed++;
       });
     });
   });
-
-  const rate = planned > 0 ? Math.round((completed/planned)*100) : 100;
-  return { planned, completed, missed, wrong, rate };
+  return { planned, completed, missed, rate: planned > 0 ? Math.round(completed/planned*100) : 100 };
 }
 
 function getRecentCompliance(days=14) {
   if (!IS_LIVE) return null;
-  const today = new Date();
-  const cutoff = new Date(today); cutoff.setDate(today.getDate()-days);
-  const cutoffStr = cutoff.toISOString().slice(0,10);
-  const todayStr = today.toISOString().slice(0,10);
-  const actByDate = {};
-  ACTS.forEach(a => { if(!actByDate[a.date]) actByDate[a.date]=[]; actByDate[a.date].push(a); });
-
+  const td = today();
+  const cutoff = addDays(td, -days);
+  const byDate = {};
+  ACTS.forEach(a => { (byDate[a.date]=byDate[a.date]||[]).push(a); });
   let planned=0, completed=0;
   ALL.forEach(block => {
+    if (block.num === 0) return;
     block.weeks.forEach(week => {
       if (!week.weekStart) return;
       week.days.forEach((day, i) => {
-        const base = new Date(week.weekStart);
-        base.setDate(base.getDate()+i);
-        const iso = base.toISOString().slice(0,10);
-        if (iso < cutoffStr || iso >= todayStr) return;
-        if (day.t === 'rest') return;
+        const iso = addDays(week.weekStart, i);
+        if (iso < cutoff || iso >= td || day.t==='rest') return;
         planned++;
-        if (actByDate[iso] && actByDate[iso].length > 0) completed++;
+        if ((byDate[iso]||[]).length > 0) completed++;
       });
     });
   });
-  return planned > 0 ? Math.round((completed/planned)*100) : 100;
+  return planned > 0 ? Math.round(completed/planned*100) : 100;
 }
 
 function getCurrentWeekNum() {
-  const today = localDateStr(new Date());
-  const planStart = '2026-03-16';
-  if (today < planStart) return 1; // before plan start
-  let weekNum = 1;
-  for (let b=0; b<ALL.length; b++) {
-    if (ALL[b].num === 0) continue; // skip PAST block
-    for (let w=0; w<ALL[b].weeks.length; w++) {
-      const ws = ALL[b].weeks[w];
-      if (!ws.weekStart) { weekNum++; continue; }
-      const end = new Date(ws.weekStart); end.setDate(end.getDate()+7);
-      if (today >= ws.weekStart && today < end.toISOString().slice(0,10)) return weekNum;
-      weekNum++;
+  const td = today();
+  if (td < PLAN_START) return 1;
+  let n = 1;
+  for (const block of ALL) {
+    if (block.num === 0) continue;
+    for (const week of block.weeks) {
+      if (!week.weekStart) { n++; continue; }
+      if (td >= week.weekStart && td < addDays(week.weekStart, 7)) return n;
+      n++;
     }
   }
-  return weekNum;
+  return n;
 }
 
-// ── ADAPTIVE VOLUME MULTIPLIER ───────────────────────────────────────────────
+// ── ADAPTIVE VOLUME ──────────────────────────────────────────────────────────
 function getAdaptMultiplier() {
-  if (!IS_LIVE || !WELLNESS || WELLNESS.length === 0) return 1.0;
-  const weekNum = getCurrentWeekNum();
-  const expectedCtl = EXPECTED_CTL[weekNum] || 30;
+  if (!IS_LIVE || !WELLNESS || !WELLNESS.length) return 1.0;
+  const wn = getCurrentWeekNum();
+  if (wn <= 4) return 1.0;  // never adapt in the first 4 weeks — no meaningful data
+  const exp = EXPECTED_CTL[wn] || 30;
   const fd = getFitnessData();
-  const currentCtl = fd.ctl[fd.ctl.length-1] || 0;
-  const recentRate = getRecentCompliance(14) || 100;
-
-  // CTL delta vs expected
-  const ctlRatio = expectedCtl > 0 ? currentCtl / expectedCtl : 1;
-
-  // Composite: weight CTL 60%, compliance 40%
-  const compRate = recentRate / 100;
-  const composite = (ctlRatio * 0.6) + (compRate * 0.4);
-
-  // Map to multiplier: <0.7 = reduce 20%, 0.7-0.9 = reduce 10%, 0.9-1.1 = no change, >1.1 = increase 10%
-  if (composite < 0.7)  return 0.8;
-  if (composite < 0.9)  return 0.9;
-  if (composite < 1.15) return 1.0;
-  return 1.1;
+  const cur = fd.ctl[fd.ctl.length-1] || 0;
+  // Weight CTL 80%, compliance 20% in early weeks to avoid false negatives
+  const compWeight = wn <= 8 ? 0.1 : 0.4;
+  const ctlWeight  = 1 - compWeight;
+  const rate = (getRecentCompliance(14) || 100) / 100;
+  const c = (exp > 0 ? cur/exp : 1) * ctlWeight + rate * compWeight;
+  return c < 0.65 ? 0.85 : c < 0.85 ? 0.95 : c < 1.15 ? 1.0 : 1.1;
 }
 
-// ── ADAPTIVE SESSION DURATION ─────────────────────────────────────────────────
-function adaptDuration(ty, multiplier) {
-  if (multiplier === 1.0) return ty;
+function adaptDuration(ty, mult) {
   const m = ty.match(/^(\d+)\s*min/);
   if (!m) return ty;
-  const orig = parseInt(m[1]);
-  const adapted = Math.round(orig * multiplier / 5) * 5; // round to nearest 5
-  if (adapted === orig) return ty;
-  return ty.replace(/^\d+\s*min/, adapted+' min') + ' [adapted]';
+  const n = Math.round(parseInt(m[1]) * mult / 5) * 5;
+  return n === parseInt(m[1]) ? ty : ty.replace(/^\d+\s*min/, n+' min');
 }
 
-// ── VERDICT BAR ───────────────────────────────────────────────────────────────
-function renderVerdict() {
-  const el = document.getElementById('verdict-text');
-  const bar = document.getElementById('verdict-bar');
-  if (!el || !bar) return;
+// ── HERO BANNER ───────────────────────────────────────────────────────────────
+// Sport SVG paths (inline, shown in background illustration)
+const BANNER_SVG = {
+  swim: '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+  bike: '<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+  run:  '<path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="m7.5 13.4 2.3-2.9 2.4 2 2.3-4.5"/><path d="M17 20H7l1-5 2 1 2-4 2 3 1-1"/>',
+};
 
-  const weekNum = getCurrentWeekNum();
-  if (!IS_LIVE) {
-    // Generic message based on week number
-    const weeksLeft = Math.round((new Date('2026-12-06') - new Date()) / (86400000*7));
-    let genericMsg, genericColor;
-    if (weekNum <= 4) {
-      genericColor = '#3db89a';
-      genericMsg = `Week ${weekNum} — building the base. This is the foundation everything else sits on. Swim, bike, run/walk: do each session and do not skip the easy ones.`;
-    } else if (weekNum <= 12) {
-      genericColor = '#3db89a';
-      genericMsg = `Week ${weekNum} — aerobic build phase. Volume is climbing. The work you do now determines how the race feels in December. ${weeksLeft} weeks to go.`;
-    } else if (weekNum <= 20) {
-      genericColor = '#1a6fc4';
-      genericMsg = `Week ${weekNum} — build phase. Running should now be continuous and long rides are getting serious. This is where 70.3 fitness is made.`;
-    } else if (weekNum <= 26) {
-      genericColor = '#ba7517';
-      genericMsg = `Week ${weekNum} — peak training. Hard weeks. The race rehearsal is coming. Trust the plan, prioritise sleep, do not add extra sessions.`;
-    } else {
-      genericColor = '#3db89a';
-      genericMsg = `Week ${weekNum} — taper. Volume drops, sharpness stays. Resist the urge to train more. ${weeksLeft} weeks to race day — the work is done.`;
-    }
-    bar.style.borderLeftColor = genericColor;
-    el.style.color = '#dde4f0';
-    el.innerHTML = genericMsg;
-    return;
+function bgSvgRow(path, color, opacity) {
+  var out = '';
+  var cols = [8,18,28,38,48,58,68,78,88];
+  for (var i=0; i<cols.length; i++) {
+    out += '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:'+opacity+';position:absolute;top:'+(i%3===0?'8':i%3===1?'20':'4')+'px;left:'+cols[i]+'%;transform:rotate('+(i*7-10)+'deg);">'+path+'</svg>';
   }
-
-  const fd = getFitnessData();
-  const curCtl = fd.ctl[fd.ctl.length-1] || 0;
-  const curTsb = fd.tsb[fd.tsb.length-1] || 0;
-  const expectedCtl = EXPECTED_CTL[weekNum] || 30;
-  const ctlDelta = +(curCtl - expectedCtl).toFixed(1);
-  const compliance = getComplianceData();
-  const recentRate = getRecentCompliance(14);
-  const overallRate = compliance ? compliance.rate : 100;
-  const missed = compliance ? compliance.missed : 0;
-
-  const raceDate = new Date('2026-12-06');
-  const weeksLeft = Math.round((raceDate - new Date()) / (86400000*7));
-
-  let color, sentence;
-
-  if (overallRate >= 90 && ctlDelta >= -3) {
-    color = '#3db89a';
-    sentence = `You are executing the plan well — ${overallRate}% compliance and fitness right where it needs to be with ${weeksLeft} weeks to race day. Keep it up.`;
-  } else if (overallRate >= 80 && ctlDelta >= -6) {
-    color = '#3db89a';
-    sentence = `Solid execution overall — ${overallRate}% of sessions done and fitness tracking close to target. A few missed sessions but nothing that changes the picture. Stay consistent.`;
-  } else if (recentRate < 60 && ctlDelta < -5) {
-    color = '#c0392b';
-    sentence = `You are behind — ${missed} sessions missed recently, fitness ${Math.abs(ctlDelta).toFixed(0)} points below where it should be at week ${weekNum}. The plan has been adjusted down. You need to string together consistent weeks now or the December race will be a suffer-fest.`;
-  } else if (recentRate < 70) {
-    color = '#ba7517';
-    sentence = `Inconsistent over the last two weeks — only ${recentRate}% of sessions completed. Fitness is still ok but this cannot continue. Miss a few more weeks like this and the plan unravels.`;
-  } else if (ctlDelta < -8) {
-    color = '#c0392b';
-    sentence = `Fitness is ${Math.abs(ctlDelta).toFixed(0)} points below expected for week ${weekNum}. You are behind the curve. The plan has been pulled back — focus on quality over quantity and do not skip any more sessions.`;
-  } else if (ctlDelta > 8) {
-    color = '#1a6fc4';
-    sentence = `You are ahead of schedule — fitness ${ctlDelta.toFixed(0)} points above target for this point in the plan. The plan has been nudged up slightly. Make sure fatigue (TSB: ${curTsb}) does not get too negative.`;
-  } else if (curTsb < -15) {
-    color = '#ba7517';
-    sentence = `Compliance is good but you are carrying significant fatigue right now (form: ${curTsb}). Do not add extra sessions — let the plan do its job and prioritise sleep and nutrition this week.`;
-  } else {
-    color = '#ba7517';
-    sentence = `On track overall but the last two weeks have been patchy (${recentRate}% compliance). Fitness is close to target. Tighten up the consistency — at ${weeksLeft} weeks out, every session counts.`;
-  }
-
-  bar.style.borderLeftColor = color;
-  el.style.color = '#dde4f0';
-  el.innerHTML = sentence;
+  return out;
 }
 
-// ── STATUS INDICATOR ──────────────────────────────────────────────────────────
-function renderStatus() {
-  const el = document.getElementById('status-indicator');
+function renderBanner() {
+  var el = document.getElementById('hero-banner');
   if (!el) return;
 
+  var wn     = getCurrentWeekNum();
+  var wleft  = weeksToRace();
+  var fd     = IS_LIVE ? getFitnessData() : null;
+  var curCtl = fd ? (fd.ctl[fd.ctl.length-1]||0) : 0;
+  var curTsb = fd ? (fd.tsb[fd.tsb.length-1]||0) : 0;
+  var exp    = EXPECTED_CTL[wn]||30;
+  var delta  = fd ? +(curCtl-exp).toFixed(1) : 0;
+  var c      = IS_LIVE ? getComplianceData() : null;
+  var rate   = c ? c.rate : 100;
+  var recent = IS_LIVE ? (getRecentCompliance(14)||100) : 100;
+  var mult   = IS_LIVE ? getAdaptMultiplier() : 1.0;
+
+  // ── Determine status ───────────────────────────────────────────────────────
+  var statusColor, statusLabel, headline, subline, sport;
+
   if (!IS_LIVE) {
-    el.style.display = 'none';
-    return;
-  }
-
-  const fd = getFitnessData();
-  const curCtl = fd.ctl[fd.ctl.length-1] || 0;
-  const curTsb = fd.tsb[fd.tsb.length-1] || 0;
-  const weekNum = getCurrentWeekNum();
-  const expectedCtl = EXPECTED_CTL[weekNum] || 30;
-  const ctlDelta = +(curCtl - expectedCtl).toFixed(1);
-  const compliance = getComplianceData();
-  const recentRate = getRecentCompliance(14);
-  const multiplier = getAdaptMultiplier();
-
-  // Days to race (approx Dec 6 2026)
-  const raceDate = new Date('2026-12-06');
-  const daysToRace = Math.round((raceDate - new Date()) / 86400000);
-  const weeksToRace = Math.round(daysToRace/7);
-
-  // Status level
-  let statusColor, statusLabel, statusMsg, statusIcon;
-  const overallRate = compliance ? compliance.rate : 100;
-  const ctlOk = ctlDelta >= -5;
-  const compOk = overallRate >= 75;
-  const recentOk = recentRate >= 70;
-
-  if (ctlOk && compOk && recentOk) {
-    statusColor = '#0e7c65'; statusLabel = 'ON TRACK';
-    statusIcon = '●';
-    statusMsg = `Fitness is where it should be (CTL ${curCtl} vs expected ${expectedCtl}). Keep executing the plan.`;
-  } else if (!recentOk && ctlOk) {
-    statusColor = '#9a7c0a'; statusLabel = 'PATCHY RECENTLY';
-    statusIcon = '◐';
-    statusMsg = `Last 2 weeks compliance at ${recentRate}% — fitness still ok but consistency needs to improve. Don't let it slide further.`;
-  } else if (ctlDelta < -8) {
-    statusColor = '#c0392b'; statusLabel = 'BEHIND PLAN';
-    statusIcon = '✕';
-    statusMsg = `CTL is ${Math.abs(ctlDelta)} points below expected. Future weeks have been reduced 10–20% to allow catch-up without injury.`;
-  } else if (ctlDelta > 8) {
-    statusColor = '#1a6fc4'; statusLabel = 'AHEAD OF PLAN';
-    statusIcon = '▲';
-    statusMsg = `CTL ${ctlDelta} points above expected — you're building faster than planned. Future weeks nudged up 10%.`;
-  } else {
-    statusColor = '#9a7c0a'; statusLabel = 'SLIGHT GAP';
-    statusIcon = '◐';
-    statusMsg = `CTL slightly below expected (${curCtl} vs ${expectedCtl}). ${compliance ? compliance.missed+' sessions missed' : ''}. Plan adjusted slightly — focus on consistency.`;
-  }
-
-  const adaptNote = multiplier !== 1.0
-    ? `<span style="font-size:10px;color:${multiplier<1?'#e07070':'#5a9ee0'};margin-left:10px;">${multiplier<1?'↓ Volume reduced':'↑ Volume increased'} ${Math.round(Math.abs(1-multiplier)*100)}% based on current fitness</span>`
-    : '';
-
-  el.style.display = 'block';
-  el.innerHTML = `
-  <div style="background:#0f1623;border:1px solid rgba(255,255,255,0.07);border-left:3px solid ${statusColor};padding:12px 16px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
-    <div style="display:flex;align-items:center;gap:8px;min-width:120px;">
-      <span style="font-size:16px;color:${statusColor};">${statusIcon}</span>
-      <div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;color:${statusColor};">${statusLabel}</div>
-        <div style="font-size:10px;color:#3d5270;margin-top:1px;">Week ${weekNum} of 30</div>
-      </div>
-    </div>
-    <div style="flex:1;min-width:200px;">
-      <div style="font-size:11px;color:#dde4f0;line-height:1.6;">${statusMsg}${adaptNote}</div>
-    </div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-      <div style="text-align:center;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#dde4f0;">${overallRate}%</div>
-        <div style="font-size:9px;color:#3d5270;letter-spacing:.06em;text-transform:uppercase;">Compliance</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#dde4f0;">${curCtl}</div>
-        <div style="font-size:9px;color:#3d5270;letter-spacing:.06em;text-transform:uppercase;">CTL</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:${curTsb>=0?'#3db89a':'#e07070'};">${curTsb>0?'+':''}${curTsb}</div>
-        <div style="font-size:9px;color:#3d5270;letter-spacing:.06em;text-transform:uppercase;">Form</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#dde4f0;">${weeksToRace}</div>
-        <div style="font-size:9px;color:#3d5270;letter-spacing:.06em;text-transform:uppercase;">Wks to race</div>
-      </div>
-    </div>
-  </div>`;
-
-  // Re-render current week with adaptive multiplier applied
-  renderWeekAdaptive(getAdaptMultiplier());
-
-  // Update verdict bar
-  renderVerdict();
-}
-
-// ── ADAPTIVE RENDERWEEK ───────────────────────────────────────────────────────
-function renderWeekAdaptive(multiplier) {
-  // Only adapt future weeks
-  const today = localDateStr(new Date());
-  const w = ALL[curBlock].weeks[curWeek];
-  if (!w.weekStart) return;
-  const weekEnd = new Date(w.weekStart); weekEnd.setDate(weekEnd.getDate()+7);
-  const isFuture = w.weekStart > today;
-  if (!isFuture || multiplier === 1.0) return;
-
-  // Re-render with adapted durations
-  const actuals = IS_LIVE ? getActualsForWeek(w.weekStart) : {};
-  document.getElementById('week-display').innerHTML = `<div class="days-grid">${w.days.map((d, i) => {
-    const acts = actuals[i] || null;
-    const base = new Date(w.weekStart); base.setDate(base.getDate()+i);
-    const iso = base.toISOString().slice(0,10);
-    const isToday = iso === today;
-
-    if (acts) {
-      const fmt = fmtActual(acts);
-      return `<div class="day-card done" style="min-height:148px;padding:8px;">
-        <div class="day-name">${d.d}</div>
-        <div style="display:grid;grid-template-columns:55% 45%;gap:6px;height:calc(100% - 22px);">
-          <div style="border-right:1px solid rgba(255,255,255,0.06);padding-right:6px;">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:.1em;color:#3d5270;margin-bottom:3px;">PLAN</div>
-            <span class="tag ${T[d.t]}" style="margin-bottom:3px;">${d.tl}</span>
-            <div style="font-size:10px;font-weight:500;color:#6b82a0;line-height:1.35;">${d.ty}</div>
-          </div>
-          <div style="padding-left:2px;">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:.1em;color:#0e7c65;margin-bottom:3px;">ACTUAL</div>
-            <div style="font-size:9px;font-weight:600;color:#3db89a;margin-bottom:3px;">${fmt.typeLabel}</div>
-            <div style="font-size:9px;color:#6b82a0;line-height:1.55;">${fmt.metrics.split(' · ').join('<br>')}</div>
-          </div>
-        </div>
-      </div>`;
+    // Generic week-based — pick a dominant sport to illustrate
+    sport = wn <= 8 ? 'bike' : wn <= 16 ? 'run' : 'swim';
+    if (wn <= 4) {
+      statusColor = '#FC6719'; statusLabel = 'BUILDING BASE';
+      headline = 'Week ' + wn + ' of 30. The foundation starts here.';
+      subline = 'Three sports. Thirty-eight weeks. One finish line. Every session from today builds the engine that carries you to December.';
+    } else if (wn <= 12) {
+      statusColor = '#FC6719'; statusLabel = 'AEROBIC BUILD';
+      headline = 'Volume is climbing. Stay patient.';
+      subline = 'The aerobic base you build right now determines everything that comes after. ' + wleft + ' weeks to race day — the work you do in these blocks is the race.';
+    } else if (wn <= 20) {
+      statusColor = '#2176c7'; statusLabel = 'BUILD PHASE';
+      headline = 'This is where 70.3 fitness gets made.';
+      subline = 'Long rides, continuous running, race-distance swims. You are no longer just training — you are becoming a triathlete. ' + wleft + ' weeks to go.';
+    } else if (wn <= 26) {
+      statusColor = '#c0392b'; statusLabel = 'PEAK BLOCK';
+      headline = 'The hardest weeks of the plan. Trust the process.';
+      subline = 'Peak volume, brick sessions, race rehearsal. Every hard session makes December easier. Prioritise sleep, eat well, do not add extra.';
+    } else {
+      statusColor = '#3db89a'; statusLabel = 'TAPER';
+      headline = 'The hay is in the barn. Now stay sharp.';
+      subline = 'Volume drops, sharpness stays. Your fitness is built. ' + wleft + ' weeks to race day — the only job now is to arrive fresh and confident.';
     }
+  } else {
+    // Live assessment
+    // In early weeks (1-6) be generous — the plan is just getting started
+  var earlyWeeks = wn <= 6;
+  var effectiveRate  = earlyWeeks ? Math.max(rate, 75) : rate;
+  var effectiveRecent= earlyWeeks ? Math.max(recent, 70) : recent;
 
-    const adaptedTy = d.t !== 'rest' ? adaptDuration(d.ty, multiplier) : d.ty;
-    const isAdapted = adaptedTy !== d.ty;
-    const extraCls = d.cl ? ' '+d.cl : '';
-    return `<div class="day-card${extraCls}${isToday?' today':''}">
-      <div class="day-name">${d.d}</div>
-      <span class="tag ${T[d.t]}">${d.tl}</span>
-      <div class="day-type">${adaptedTy}${isAdapted?'<span style="color:#5a9ee0;font-size:8px;margin-left:3px;">↕</span>':''}</div>
-      <div class="day-detail">${d.de}</div>
-    </div>`;
-  }).join('')}</div>`;
+  if (wn <= 2) {
+    statusColor='#3db89a'; statusLabel='GETTING STARTED'; sport='bike';
+    headline = 'Week ' + wn + ' — the plan begins. Every session from here counts.';
+    subline  = 'You are in the foundation phase. Show up consistently, keep the effort easy, and trust the process. ' + wleft + ' weeks to race day.';
+  } else if (effectiveRate >= 85 && delta >= -4) { statusColor='#3db89a'; statusLabel='ON TRACK'; sport='bike';
+    headline = 'You are executing well. ' + rate + '% compliance.';
+    subline  = 'Fitness is right where it needs to be (CTL ' + curCtl + ' vs target ' + exp + '). ' + wleft + ' weeks to race day. Keep showing up.';
+  } else if (effectiveRate >= 70 && delta >= -7) { statusColor='#3db89a'; statusLabel='SOLID'; sport='bike';
+    headline = 'Solid execution — ' + rate + '% of sessions done.';
+    subline  = 'Fitness tracking close to target. Stay consistent and the race will take care of itself.';
+  } else if (effectiveRecent < 55 && delta < -6 && !earlyWeeks) { statusColor='#c0392b'; statusLabel='BEHIND'; sport='run';
+    headline = 'Fitness gap building — time to refocus.';
+    subline  = 'Fitness is ' + Math.abs(delta) + ' points below target and recent sessions light. String together 3 consistent weeks and you will be back on track.';
+  } else if (effectiveRecent < 65 && !earlyWeeks) { statusColor='#ba7517'; statusLabel='INCONSISTENT'; sport='run';
+    headline = 'Sessions a little patchy recently (' + recent + '% in the last 2 weeks).';
+    subline  = 'Fitness is still ok. Tighten up the consistency — at ' + wleft + ' weeks out the compounding effect matters.';
+  } else if (delta < -9 && !earlyWeeks) { statusColor='#c0392b'; statusLabel='FITNESS GAP'; sport='swim';
+    headline = 'Fitness ' + Math.abs(delta) + ' points below target for week ' + wn + '.';
+    subline  = 'Focus on quality over quantity. Every session logged from here matters.';
+  } else if (delta > 8) { statusColor='#1a6fc4'; statusLabel='AHEAD'; sport='swim';
+    headline = 'Ahead of schedule — CTL ' + delta + ' points above target.';
+    subline  = 'Good position to be in. Watch fatigue (form: ' + (curTsb>0?'+':'') + curTsb + '). Being ahead is good; arriving injured is not.';
+  } else if (curTsb < -18) { statusColor='#ba7517'; statusLabel='FATIGUED'; sport='bike';
+    headline = 'Carrying some fatigue right now (form: ' + curTsb + ').';
+    subline  = 'No extra sessions this week. Prioritise sleep and nutrition — fatigue now is fitness next week.';
+  } else { statusColor='#3db89a'; statusLabel='ON TRACK'; sport='bike';
+    headline = 'Week ' + wn + ' — building steadily. ' + wleft + ' weeks to race day.';
+    subline  = 'Fitness tracking well. Keep the sessions consistent and the long rides/runs are the priority each week.';
+  }
+  }
+
+  // Adapted volume note
+  var adaptLine = '';  // silent adaptation — no UI indicator
+
+  // Stats pills
+  var pills = '';
+  if (IS_LIVE) {
+    var statsData = [
+      {l:'Compliance', v: rate+'%'},
+      {l:'CTL', v: curCtl},
+      {l:'Form', v: (curTsb>0?'+':'')+curTsb},
+      {l:'Week', v: wn+' / 30'},
+      {l:'To race', v: wleft+'w'},
+    ];
+    pills = '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);">';
+    statsData.forEach(function(s) {
+      pills += '<div><div class="bc hero-num">'+s.v+'</div>'+
+               '<div class="hero-lbl">'+s.l+'</div></div>';
+    });
+    pills += '</div>';
+  } else {
+    pills = '<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:20px;">';
+    pills += '<div><div style="font-size:20px;font-weight:700;color:#dde4f0;">'+wleft+'w</div><div style="font-size:9px;color:#3d5270;text-transform:uppercase;letter-spacing:.08em;">To race</div></div>';
+    pills += '<div><div style="font-size:20px;font-weight:700;color:#dde4f0;">'+wn+'/30</div><div style="font-size:9px;color:#3d5270;text-transform:uppercase;letter-spacing:.08em;">Week</div></div>';
+    pills += '</div>';
+  }
+
+  // Sport color for illustration
+  var sportColor = sport==='bike' ? '#FC6719' : sport==='run' ? '#c0392b' : '#2176c7';
+  var sportPath  = BANNER_SVG[sport];
+
+  el.innerHTML =
+    '<div style="position:relative;overflow:hidden;background:linear-gradient(135deg,#0f1623 60%,'+statusColor+'18 100%);border:1px solid rgba(255,255,255,0.07);border-left:3px solid '+statusColor+';padding:18px 20px 16px;">'
+    // Background sport illustration
+    +'<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">'+bgSvgRow(sportPath,sportColor,0.06)+'</div>'
+    // Content
+    +'<div style="position:relative;z-index:1;">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
+    +'<span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:'+statusColor+';">'+statusLabel+'</span>'
+    +'<span style="font-size:10px;color:#3d5270;">Week '+wn+' of 30 &nbsp;·&nbsp; '+wleft+' weeks to race</span>'
+    +'</div>'
+    +'<div style="font-size:22px;font-weight:700;color:#dde4f0;line-height:1.2;margin-bottom:6px;">'+headline+'</div>'
+    +'<div style="font-size:12px;color:#8a9fc0;line-height:1.65;max-width:720px;">'+subline+'</div>'
+    +adaptLine
+    +pills
+    +'</div></div>';
 }
 
-// ── PAGE LOAD ─────────────────────────────────────────────────────────────────
+// Keep renderVerdict and renderStatus as aliases so existing call sites work
+function renderVerdict() { renderBanner(); }
+function renderStatus()  { renderBanner(); }
+
+
+// ── PAGE LOAD ────────────────────────────────────────────────────────────────
 renderBlockNav();
 renderWeekNav();
 renderWeek();
 renderVerdict();
 </script>
-
-<!-- ===================== ATHLETE DASHBOARD ===================== -->
-<div style="margin-top:2.5rem; border-top: 1px solid rgba(255,255,255,0.07); padding-top:2rem;">
-  <div style="margin-bottom:1.25rem;">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#dde4f0;margin-bottom:3px;">Athlete Dashboard</div>
-    <div id="dash-status" style="font-size:11px;color:#6b82a0;letter-spacing:0.05em;text-transform:uppercase;">Live data not yet loaded</div>
-  </div>
-
-  <div style="display:flex;gap:0;margin-bottom:1.5rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,0.07);" id="dash-nav">
-    <button class="blk-btn active" onclick="showDash('overview',this)">Overview</button>
-    <button class="blk-btn" onclick="showDash('fitness',this)">Fitness &amp; Fatigue</button>
-    <button class="blk-btn" onclick="showDash('power',this)">Power &amp; HR</button>
-    <button class="blk-btn" onclick="showDash('volume',this)">Weekly Volume</button>
-    <button class="blk-btn" onclick="showDash('swim',this)">Swim</button>
-  </div>
-
-  <div id="dash-content"></div>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-
-// ── INTERVALS.ICU CONNECTION ──────────────────────────────────────────────────
-
-// IS_LIVE, WELLNESS, ACTS declared globally in script 0
 ACTS = [{"date":"2025-11-16","type":"Ride","dist":12.52,"min":54.1,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":13.9,"cal":276.0},{"date":"2025-11-23","type":"Ride","dist":20.16,"min":71.3,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":17.0,"cal":null},{"date":"2025-11-29","type":"Ride","dist":28.19,"min":93.1,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":18.2,"cal":null},{"date":"2025-12-13","type":"Ride","dist":9.13,"min":29.4,"watts":69.0,"hr":132.0,"maxhr":160.0,"effort":19.0,"spd":18.6,"cal":388.0},{"date":"2025-12-14","type":"Ride","dist":38.39,"min":138.6,"watts":51.0,"hr":135.0,"maxhr":155.0,"effort":131.0,"spd":16.6,"cal":476.0},{"date":"2025-12-15","type":"Swim","dist":0.5,"min":11.5,"watts":null,"hr":127.0,"maxhr":157.0,"effort":18.0,"spd":2.6,"cal":170.0},{"date":"2025-12-20","type":"Ride","dist":22.09,"min":81.2,"watts":75.0,"hr":138.0,"maxhr":175.0,"effort":87.0,"spd":16.3,"cal":1210.0},{"date":"2025-12-22","type":"Ride","dist":44.26,"min":154.7,"watts":73.0,"hr":144.0,"maxhr":168.0,"effort":218.0,"spd":17.2,"cal":2465.0},{"date":"2025-12-27","type":"Ride","dist":14.23,"min":44.0,"watts":74.0,"hr":140.0,"maxhr":160.0,"effort":50.0,"spd":19.4,"cal":676.0},{"date":"2025-12-28","type":"Ride","dist":22.25,"min":74.5,"watts":75.0,"hr":135.0,"maxhr":152.0,"effort":71.0,"spd":17.9,"cal":1073.0},{"date":"2026-01-10","type":"Virtual Ride","dist":24.64,"min":84.6,"watts":91.0,"hr":144.0,"maxhr":162.0,"effort":118.0,"spd":17.5,"cal":440.0},{"date":"2026-01-11","type":"Virtual Ride","dist":22.12,"min":58.8,"watts":95.0,"hr":131.0,"maxhr":155.0,"effort":38.0,"spd":22.6,"cal":318.0},{"date":"2026-01-13","type":"Virtual Ride","dist":10.91,"min":30.0,"watts":97.0,"hr":128.0,"maxhr":162.0,"effort":16.0,"spd":21.8,"cal":166.0},{"date":"2026-01-14","type":"Virtual Ride","dist":19.79,"min":65.5,"watts":109.0,"hr":151.0,"maxhr":176.0,"effort":123.0,"spd":18.1,"cal":409.0},{"date":"2026-01-16","type":"Virtual Ride","dist":11.49,"min":34.1,"watts":93.0,"hr":146.0,"maxhr":165.0,"effort":51.0,"spd":20.2,"cal":182.0},{"date":"2026-01-17","type":"Virtual Ride","dist":23.89,"min":65.6,"watts":121.0,"hr":152.0,"maxhr":171.0,"effort":129.0,"spd":21.8,"cal":455.0},{"date":"2026-01-18","type":"Swim","dist":0.45,"min":10.2,"watts":null,"hr":130.0,"maxhr":169.0,"effort":29.0,"spd":2.6,"cal":166.0},{"date":"2026-01-19","type":"Virtual Ride","dist":18.55,"min":50.2,"watts":84.0,"hr":123.0,"maxhr":135.0,"effort":17.0,"spd":22.2,"cal":241.0},{"date":"2026-01-22","type":"Swim","dist":0.5,"min":10.9,"watts":null,"hr":107.0,"maxhr":138.0,"effort":8.0,"spd":2.8,"cal":173.0},{"date":"2026-01-23","type":"Virtual Ride","dist":12.75,"min":36.7,"watts":83.0,"hr":124.0,"maxhr":135.0,"effort":13.0,"spd":20.8,"cal":174.0},{"date":"2026-01-24","type":"Virtual Ride","dist":24.31,"min":64.2,"watts":112.0,"hr":139.0,"maxhr":166.0,"effort":67.0,"spd":22.7,"cal":412.0},{"date":"2026-01-25","type":"Virtual Ride","dist":25.03,"min":81.1,"watts":72.0,"hr":135.0,"maxhr":155.0,"effort":67.0,"spd":18.5,"cal":333.0},{"date":"2026-01-26","type":"Virtual Ride","dist":19.9,"min":59.5,"watts":70.0,"hr":144.0,"maxhr":155.0,"effort":86.0,"spd":20.1,"cal":240.0},{"date":"2026-01-30","type":"Virtual Ride","dist":14.17,"min":56.0,"watts":76.0,"hr":118.0,"maxhr":136.0,"effort":14.0,"spd":15.2,"cal":244.0},{"date":"2026-01-31","type":"Virtual Ride","dist":18.82,"min":54.3,"watts":79.0,"hr":122.0,"maxhr":143.0,"effort":18.0,"spd":20.8,"cal":246.0},{"date":"2026-01-31","type":"Virtual Ride","dist":19.52,"min":68.8,"watts":86.0,"hr":133.0,"maxhr":150.0,"effort":49.0,"spd":17.0,"cal":337.0},{"date":"2026-02-14","type":"Virtual Ride","dist":15.85,"min":40.9,"watts":107.0,"hr":134.0,"maxhr":160.0,"effort":37.0,"spd":23.2,"cal":249.0},{"date":"2026-02-14","type":"Swim","dist":1.3,"min":26.2,"watts":null,"hr":118.0,"maxhr":158.0,"effort":29.0,"spd":3.0,"cal":417.0},{"date":"2026-02-15","type":"Virtual Ride","dist":17.17,"min":46.1,"watts":141.0,"hr":150.0,"maxhr":168.0,"effort":82.0,"spd":22.3,"cal":373.0},{"date":"2026-02-18","type":"Virtual Ride","dist":21.82,"min":60.5,"watts":88.0,"hr":123.0,"maxhr":160.0,"effort":20.0,"spd":21.6,"cal":306.0},{"date":"2026-02-19","type":"Virtual Ride","dist":15.02,"min":45.2,"watts":82.0,"hr":129.0,"maxhr":147.0,"effort":25.0,"spd":19.9,"cal":212.0},{"date":"2026-02-21","type":"Virtual Ride","dist":70.11,"min":192.7,"watts":85.0,"hr":118.0,"maxhr":140.0,"effort":55.0,"spd":21.8,"cal":935.0},{"date":"2026-02-23","type":"Swim","dist":0.33,"min":16.8,"watts":null,"hr":103.0,"maxhr":120.0,"effort":3.0,"spd":1.2,"cal":147.0},{"date":"2026-02-24","type":"Swim","dist":1.01,"min":45.3,"watts":null,"hr":105.0,"maxhr":134.0,"effort":13.0,"spd":1.3,"cal":386.0},{"date":"2026-02-28","type":"Swim","dist":1.27,"min":60.3,"watts":null,"hr":117.0,"maxhr":142.0,"effort":27.0,"spd":1.3,"cal":606.0},{"date":"2026-03-12","type":"Swim","dist":1.05,"min":22.0,"watts":null,"hr":112.0,"maxhr":132.0,"effort":12.0,"spd":2.9,"cal":292.0},{"date":"2026-03-14","type":"Run","dist":1.5,"min":17.8,"watts":104.0,"hr":113.0,"maxhr":149.0,"effort":4.0,"spd":5.1,"cal":173.0},{"date":"2026-03-15","type":"Run","dist":2.04,"min":24.8,"watts":184.0,"hr":127.0,"maxhr":150.0,"effort":12.0,"spd":4.9,"cal":305.0},{"date":"2026-03-17","type":"Virtual Run","dist":2.57,"min":25.4,"watts":null,"hr":128.0,"maxhr":159.0,"effort":15.0,"spd":6.1,"cal":197.0}];
 
-// Wellness data from intervals.icu (CTL/ATL/TSB) - populated on connect
-// WELLNESS declared globally above
-// IS_LIVE declared globally above
-
+// ── INTERVALS.ICU CONNECTION ──────────────────────────────────────────────────
 function toggleSettings() {
   const p = document.getElementById('settings-panel');
-  const showing = p.style.display !== 'none';
-  p.style.display = showing ? 'none' : 'block';
-  if (!showing) {
-    const saved = getSaved();
-    if (saved.athleteId) document.getElementById('inp-athlete').value = saved.athleteId;
-    if (saved.apiKey) document.getElementById('inp-apikey').value = saved.apiKey;
+  const open = p.style.display !== 'none';
+  p.style.display = open ? 'none' : 'block';
+  if (!open) {
+    const s = getSaved();
+    if (s.athleteId) document.getElementById('inp-athlete').value = s.athleteId;
+    if (s.apiKey)    document.getElementById('inp-apikey').value  = s.apiKey;
   }
 }
-
-// Close panel if clicking outside
-document.addEventListener('click', function(e) {
-  const panel = document.getElementById('settings-panel');
-  const btn = document.getElementById('settings-btn');
-  if (panel && !panel.contains(e.target) && !btn.contains(e.target)) {
-    panel.style.display = 'none';
-  }
+document.addEventListener('click', e => {
+  const p = document.getElementById('settings-panel');
+  const b = document.getElementById('settings-btn');
+  if (p && !p.contains(e.target) && !b.contains(e.target)) p.style.display = 'none';
 });
 
-function getSaved() {
-  try { return JSON.parse(localStorage.getItem('icu_creds') || '{}'); } catch(e) { return {}; }
-}
-
-function showError(msg) {
-  const el = document.getElementById('fetch-error');
-  el.textContent = msg;
-  el.style.display = 'block';
-}
+const getSaved = () => { try { return JSON.parse(localStorage.getItem('icu_creds')||'{}'); } catch{ return {}; } };
+const showError = msg => { const e=document.getElementById('fetch-error'); e.textContent=msg; e.style.display='block'; };
 
 async function connectAndFetch() {
   const athleteId = document.getElementById('inp-athlete').value.trim();
-  const apiKey = document.getElementById('inp-apikey').value.trim();
+  const apiKey    = document.getElementById('inp-apikey').value.trim();
   document.getElementById('fetch-error').style.display = 'none';
-
   if (!athleteId || !apiKey) { showError('Enter both Athlete ID and API Key.'); return; }
 
-  const headers = {
-    'Authorization': 'Basic ' + btoa('API_KEY:' + apiKey),
-    'Accept': 'application/json'
-  };
-
+  const headers = { 'Authorization':'Basic '+btoa('API_KEY:'+apiKey), 'Accept':'application/json' };
   const btn = document.querySelector('[onclick="connectAndFetch()"]');
-  btn.textContent = 'Fetching...';
-  btn.disabled = true;
+  btn.textContent = 'Fetching...'; btn.disabled = true;
 
   try {
     const oldest = '2025-11-01';
-    const newest = new Date().toISOString().slice(0,10);
+    const tmr = new Date(); tmr.setDate(tmr.getDate()+1);
+    const newest = tmr.getFullYear()+'-'+String(tmr.getMonth()+1).padStart(2,'0')+'-'+String(tmr.getDate()).padStart(2,'0');
 
-    // Fetch activities
-    const actUrl = `https://intervals.icu/api/v1/athlete/${athleteId}/activities?oldest=${oldest}&newest=${newest}`;
-    const actRes = await fetch(actUrl, { headers });
-    if (!actRes.ok) {
-      if (actRes.status === 401) throw new Error('Invalid credentials. Check your Athlete ID and API Key.');
-      throw new Error(`Activities fetch failed: ${actRes.status} ${actRes.statusText}`);
-    }
-    const actData = await actRes.json();
+    const [actRes, welRes] = await Promise.all([
+      fetch(`https://intervals.icu/api/v1/athlete/${athleteId}/activities?oldest=${oldest}&newest=${newest}`, {headers}),
+      fetch(`https://intervals.icu/api/v1/athlete/${athleteId}/wellness?oldest=${oldest}&newest=${newest}`, {headers})
+    ]);
 
-    // Fetch wellness (CTL/ATL/TSB)
-    const welUrl = `https://intervals.icu/api/v1/athlete/${athleteId}/wellness?oldest=${oldest}&newest=${newest}`;
-    const welRes = await fetch(welUrl, { headers });
-    if (!welRes.ok) throw new Error(`Wellness fetch failed: ${welRes.status}`);
-    const welData = await welRes.json();
+    if (!actRes.ok) throw new Error(actRes.status===401 ? 'Invalid credentials.' : `Activities error: ${actRes.status}`);
+    if (!welRes.ok) throw new Error(`Wellness error: ${welRes.status}`);
 
-    // Map activities to our format
+    const [actData, welData] = await Promise.all([actRes.json(), welRes.json()]);
+
+    // Map intervals.icu types to our canonical types
+    const typeMap = t => {
+      if (['Ride','VirtualRide','EBikeRide','IndoorCycling','Cycling','MountainBikeRide','GravelRide'].includes(t)) return t.startsWith('Virtual') ? 'Virtual Ride' : 'Ride';
+      if (['Run','VirtualRun','TrailRun','Treadmill'].includes(t)) return t.startsWith('Virtual')||t==='Treadmill' ? 'Virtual Run' : 'Run';
+      if (t === 'Swim') return 'Swim';
+      return t; // keep original for unknown types
+    };
+    // Accept bike, run, swim + any unknown type that might be relevant
+    const KEEP = a => {
+      const t = a.type||'';
+      return t.toLowerCase().includes('ride') || t.toLowerCase().includes('run') ||
+             t.toLowerCase().includes('swim') || t.toLowerCase().includes('cycle') ||
+             t.toLowerCase().includes('cycling') || t.toLowerCase().includes('treadmill');
+    };
+    console.log('[intervals.icu] Raw activity types:', [...new Set(actData.map(a=>a.type))]);
     ACTS = actData
-      .filter(a => ['Ride','VirtualRide','Run','VirtualRun','Swim'].includes(a.type))
+      .filter(a => a && (a.start_date_local || a.start_date))
+      .filter(KEEP)
       .map(a => ({
-        date: a.start_date_local.slice(0,10),
-        type: a.type === 'VirtualRide' ? 'Virtual Ride' : a.type === 'VirtualRun' ? 'Virtual Run' : a.type,
-        name: a.name,
-        dist: a.distance ? +(a.distance/1000).toFixed(2) : 0,
-        min:  a.moving_time ? +(a.moving_time/60).toFixed(1) : 0,
-        watts: a.average_watts || null,
-        hr:    a.average_heartrate || null,
-        maxhr: a.max_heartrate || null,
+        date:   (a.start_date_local || a.start_date || '').slice(0,10),
+        type:   typeMap(a.type),
+        name:   a.name,
+        dist:   a.distance   ? +(a.distance/1000).toFixed(2) : 0,
+        min:    a.moving_time? +(a.moving_time/60).toFixed(1) : 0,
+        watts:  a.average_watts || null,
+        hr:     a.average_heartrate || null,
+        maxhr:  a.max_heartrate || null,
         effort: a.icu_relative_effort || a.training_load || null,
-        spd:   a.average_speed ? +(a.average_speed*3.6).toFixed(1) : 0,
-        cal:   a.calories || null
+        spd:    a.average_speed ? +(a.average_speed*3.6).toFixed(1) : 0,
+        cal:    a.calories || null
       }));
 
-    // Map wellness to CTL/ATL/TSB arrays
-    WELLNESS = welData.map(w => ({
-      date: w.date,
-      ctl: w.icu_ctl || 0,
-      atl: w.icu_atl || 0,
-      tsb: (w.icu_ctl||0) - (w.icu_atl||0)
-    }));
+    WELLNESS = welData
+      .filter(w => (w.id || w.date))
+      .map(w => ({
+        date: (w.id || w.date || ''),
+        ctl:  w.icu_ctl  || 0,
+        atl:  w.icu_atl  || 0,
+        tsb:  (w.icu_ctl||0) - (w.icu_atl||0)
+      }));
 
-    // Save credentials
-    localStorage.setItem('icu_creds', JSON.stringify({ athleteId, apiKey }));
+    localStorage.setItem('icu_creds', JSON.stringify({athleteId, apiKey}));
     IS_LIVE = true;
 
-    // Update UI
-    // Update status text
-    const todayFmt = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
-    document.getElementById('dash-status').textContent = `${ACTS.length} activities · last updated ${todayFmt}`;
+    const dateStr = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('dash-status').textContent = `${ACTS.length} activities · updated ${dateStr}`;
     document.getElementById('dash-status').style.color = '#3db89a';
-    // Update floating button
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     document.getElementById('settings-btn-label').textContent = '✓ intervals.icu';
-    document.getElementById('last-refresh').textContent = timeStr;
-    document.getElementById('conn-dot').style.background = '#3db89a';
-    document.getElementById('settings-btn').style.borderColor = 'rgba(14,124,101,0.4)';
-    document.getElementById('settings-btn').style.color = '#3db89a';
+    document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('conn-icon').style.stroke = '#3db89a';
+    document.getElementById('settings-btn').style.cssText += ';border-color:rgba(14,124,101,0.4);color:#3db89a;';
     document.getElementById('settings-panel').style.display = 'none';
 
-    // Full refresh after connect
-    renderBlockNav();
-    renderWeekNav();
-    renderWeek();
-    renderVerdict();
-    renderStatus();
-    const activeTab = document.querySelector('#dash-nav .blk-btn.active');
-    if (activeTab) activeTab.click();
+    renderBlockNav(); renderWeekNav(); renderWeek(); renderVerdict(); renderStatus();
+    // Re-render whichever dashboard tab is active with fresh ACTS data
+    const activeBtn = document.querySelector('#dash-nav .blk-btn.active');
+    if (activeBtn) {
+      const tabName = activeBtn.getAttribute('onclick').match(/showDash\('(\w+)'/)?.[1];
+      if (tabName) ({overview:dashOverview,fitness:dashFitness,volume:dashVolume,swim:dashSwim,bike:dashBike,run:dashRun})[tabName]?.();
+    } else {
+      dashOverview();
+    }
 
   } catch(err) {
-    showError(err.message);
-    btn.textContent = 'Fetch data';
-    btn.disabled = false;
+    showError(err.message); btn.textContent='Fetch data'; btn.disabled=false;
   }
 }
 
-// Auto-connect on load if saved credentials exist
 window.addEventListener('load', () => {
-  const saved = getSaved();
-  if (saved.athleteId && saved.apiKey) {
-    document.getElementById('inp-athlete').value = saved.athleteId;
-    document.getElementById('inp-apikey').value = saved.apiKey;
-    document.getElementById('settings-panel').style.display = 'block';
-    document.getElementById('dash-status').textContent = 'Saved credentials found — reconnecting...';
-    document.getElementById('settings-btn-label').textContent = 'Connecting...';
+  const s = getSaved();
+  if (s.athleteId && s.apiKey) {
+    document.getElementById('inp-athlete').value = s.athleteId;
+    document.getElementById('inp-apikey').value  = s.apiKey;
+    document.getElementById('dash-status').textContent = 'Reconnecting...';
     connectAndFetch();
   }
 });
 
-// ── HELPERS ──────────────────────────────────────────────────────────────────
-const isBike = a => ['Ride','Virtual Ride'].includes(a.type);
-const isRun  = a => ['Run','Virtual Run'].includes(a.type);
-const isSwim = a => a.type === 'Swim';
-const isTraining = a => isBike(a)||isRun(a)||isSwim(a);
+// ── CHART HELPERS ─────────────────────────────────────────────────────────────
+const charts = {};
+function mkChart(id, type, data, opts) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  const el = document.getElementById(id);
+  if (!el) return;
+  charts[id] = new Chart(el, {type, data, options: opts});
+  return charts[id];
+}
+const GRID = 'rgba(255,255,255,0.05)', TICK = '#6b82a0';
+const TOOLTIP = {backgroundColor:'#0f1623',titleColor:'#dde4f0',bodyColor:'#6b82a0',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:8};
+const LEGEND_TOP = {display:true,position:'top',labels:{color:TICK,font:{size:11},boxWidth:10,boxHeight:10,padding:12}};
+function axisOpts(label) {
+  return {
+    x:{grid:{color:GRID},ticks:{color:TICK,font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:16}},
+    y:{grid:{color:GRID},ticks:{color:TICK,font:{size:10}},title:{display:!!label,text:label||'',color:TICK,font:{size:10}}}
+  };
+}
+const C = {bike:'#FC6719',run:'#c0392b',swim:'#2176c7'};
 
-function wk(dateStr) {
-  const d = new Date(dateStr);
-  const jan1 = new Date(d.getFullYear(),0,1);
-  return d.getFullYear()+'-W'+String(Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7)).padStart(2,'0');
+// ── LUCIDE ICONS (inline SVG, stroke-based) ───────────────────────────────────
+const ICONS = {
+  bike:    '<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+  swim:    '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+  run:     '<path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="m7.5 13.4 2.3-2.9 2.4 2 2.3-4.5"/><path d="M17 20H7l1-5 2 1 2-4 2 3 1-1"/>',
+  heart:   '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  zap:     '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  clock:   '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  route:   '<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
+  gauge:   '<path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M13.41 10.59 16 8"/><path d="M4.93 19a10 10 0 1 1 14.14 0"/>',
+  trending:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  bar:     '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  grid:    '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
+  timer:   '<circle cx="12" cy="14" r="8"/><path d="M12 6V2"/><path d="M8 2h8"/><path d="M12 10v4l2 2"/>',
+  flag:    '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>',
+  recovery:'<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.67"/>',
+  race:    '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+};
+function icon(name, size, color) {
+  size = size||13; color = color||'currentColor';
+  return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;flex-shrink:0;">'+(ICONS[name]||'')+'</svg>';
 }
 
+// ── DATA HELPERS ──────────────────────────────────────────────────────────────
 function getWeeklyBuckets() {
-  const weeks = {};
+  const wks = {};
   ACTS.forEach(a => {
-    const w = wk(a.date);
-    if(!weeks[w]) weeks[w]={key:w,bike:0,run:0,swim:0,total:0,effort:0,cal:0};
-    const m = a.min/60;
-    if(isBike(a)) weeks[w].bike+=m;
-    else if(isRun(a)) weeks[w].run+=m;
-    else if(isSwim(a)) weeks[w].swim+=m;
-    if(isTraining(a)) weeks[w].total+=m;
-    weeks[w].effort+=(a.effort||0);
-    weeks[w].cal+=(a.cal||0);
+    const k = wkKey(a.date);
+    if (!wks[k]) wks[k]={key:k,bike:0,run:0,swim:0,total:0,effort:0,cal:0};
+    const h = a.min/60;
+    if (isBike(a)) wks[k].bike+=h; else if (isRun(a)) wks[k].run+=h; else if (isSwim(a)) wks[k].swim+=h;
+    if (isTraining(a)) wks[k].total+=h;
+    wks[k].effort+=(a.effort||0); wks[k].cal+=(a.cal||0);
   });
-  return Object.values(weeks).sort((a,b)=>a.key>b.key?1:-1);
+  return Object.values(wks).sort((a,b)=>a.key>b.key?1:-1);
 }
 
 function getFitnessData() {
-  if (WELLNESS && WELLNESS.length > 0) {
-    return {
-      labels: WELLNESS.map(w => w.date.slice(5)),
-      ctl: WELLNESS.map(w => +w.ctl.toFixed(1)),
-      atl: WELLNESS.map(w => +w.atl.toFixed(1)),
-      tsb: WELLNESS.map(w => +w.tsb.toFixed(1))
-    };
+  if (WELLNESS && WELLNESS.length) {
+    return {labels:WELLNESS.map(w=>(w.date||'').slice(5)), ctl:WELLNESS.map(w=>+w.ctl.toFixed(1)), atl:WELLNESS.map(w=>+w.atl.toFixed(1)), tsb:WELLNESS.map(w=>+w.tsb.toFixed(1))};
   }
-  // Fallback: calculate from effort
-  const dayLoad = {};
-  ACTS.forEach(a => { if(a.effort) dayLoad[a.date]=(dayLoad[a.date]||0)+a.effort; });
-  const allDates = [];
-  let d = new Date('2025-11-01');
-  const end = new Date();
-  while(d<=end){ allDates.push(d.toISOString().slice(0,10)); d=new Date(d.getTime()+86400000); }
-  let ctl=0, atl=0;
-  const ctlA=[], atlA=[], tsbA=[], lblA=[];
-  allDates.forEach(dt => {
-    const load = dayLoad[dt]||0;
-    ctl = ctl+(load-ctl)/42; atl = atl+(load-atl)/7;
-    ctlA.push(+ctl.toFixed(1)); atlA.push(+atl.toFixed(1)); tsbA.push(+(ctl-atl).toFixed(1));
-    lblA.push(dt.slice(5));
-  });
-  return { labels:lblA, ctl:ctlA, atl:atlA, tsb:tsbA };
+  const dl = {};
+  ACTS.forEach(a => { if(a.effort) dl[a.date]=(dl[a.date]||0)+a.effort; });
+  const dates=[], ctl_a=[], atl_a=[], tsb_a=[], lbl=[];
+  let d=new Date('2025-11-01'), ctl=0, atl=0;
+  const end=new Date();
+  while(d<=end) {
+    const iso=localDate(d), load=dl[iso]||0;
+    ctl+=( load-ctl)/42; atl+=(load-atl)/7;
+    ctl_a.push(+ctl.toFixed(1)); atl_a.push(+atl.toFixed(1)); tsb_a.push(+(ctl-atl).toFixed(1)); lbl.push(iso.slice(5));
+    d=new Date(d.getTime()+86400000);
+  }
+  return {labels:lbl, ctl:ctl_a, atl:atl_a, tsb:tsb_a};
 }
 
 const swimData = () => ACTS.filter(isSwim).map(a=>({date:a.date,dist:Math.round(a.dist*1000),min:a.min,pace:a.dist>0?+(a.min/a.dist/10).toFixed(2):null}));
 
-const C = { bike:'#1a6fc4', run:'#c0392b', swim:'#0e7c65', grid:'rgba(255,255,255,0.05)', text:'#6b82a0' };
-
-const dashStyle = `
-  .metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem;}
-  .metric{background:#0f1623;border:1px solid rgba(255,255,255,0.07);padding:12px 14px;}
-  .metric .ml{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#3d5270;margin-bottom:6px;}
-  .metric .mv{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;color:#dde4f0;}
-  .metric .ms{font-size:10px;color:#3d5270;margin-top:2px;}
-  .ch{position:relative;width:100%;margin-bottom:1.25rem;}
-  .sec{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#3d5270;margin-bottom:8px;margin-top:.5rem;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.07);}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  .note{font-size:11px;color:#6b82a0;background:#0f1623;border-left:2px solid rgba(255,255,255,0.1);padding:9px 12px;margin-top:6px;line-height:1.6;}
-  .note strong{color:#dde4f0;font-weight:600;}
-  table.act{width:100%;border-collapse:collapse;font-size:11px;}
-  table.act th{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;text-align:left;color:#3d5270;padding:5px 6px;border-bottom:1px solid rgba(255,255,255,0.07);}
-  table.act td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,0.04);color:#6b82a0;}
-  table.act tr:hover td{background:#0f1623;color:#dde4f0;}
-  .live-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:1px 6px;background:rgba(14,124,101,0.15);border-left:2px solid #0e7c65;color:#3db89a;margin-left:8px;}
-`;
-
-const baseOpts = (yLabel) => ({
-  responsive:true, maintainAspectRatio:false,
-  plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#0f1623',titleColor:'#dde4f0',bodyColor:'#6b82a0',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:8} },
-  scales:{ x:{grid:{color:C.grid},ticks:{color:C.text,font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:16}}, y:{grid:{color:C.grid},ticks:{color:C.text,font:{size:10}},title:{display:!!yLabel,text:yLabel||'',color:C.text,font:{size:10}}} }
-});
-
-let charts = {};
-function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
-
-// ── OVERVIEW ─────────────────────────────────────────────────────────────────
+// ── DASHBOARD TABS ────────────────────────────────────────────────────────────
 function dashOverview() {
-  const bikes = ACTS.filter(isBike), runs = ACTS.filter(isRun), swims = ACTS.filter(isSwim);
-  const totBikeKm = bikes.reduce((s,a)=>s+a.dist,0);
-  const totRunKm = runs.reduce((s,a)=>s+a.dist,0);
-  const totSwimKm = swims.reduce((s,a)=>s+a.dist,0);
-  const totHrs = ACTS.filter(isTraining).reduce((s,a)=>s+a.min,0)/60;
-  const totCal = ACTS.reduce((s,a)=>s+(a.cal||0),0);
-  const wkArr = getWeeklyBuckets();
-  const lastWkEffort = wkArr[wkArr.length-1]?.effort||0;
-  const fd = getFitnessData();
-  const curCtl = fd.ctl[fd.ctl.length-1];
-  const curTsb = fd.tsb[fd.tsb.length-1];
-  const recent = [...ACTS].filter(isTraining).sort((a,b)=>a.date<b.date?1:-1).slice(0,10);
-  const liveTag = IS_LIVE ? '<span class="live-badge">live</span>' : '';
+  const bikes=ACTS.filter(isBike), runs=ACTS.filter(isRun), swims=ACTS.filter(isSwim);
+  const fd=getFitnessData(), wkArr=getWeeklyBuckets();
+  const curCtl=fd.ctl[fd.ctl.length-1]||0, curTsb=fd.tsb[fd.tsb.length-1]||0;
+  const totHrs=ACTS.filter(isTraining).reduce((s,a)=>s+a.min,0)/60;
+  const totCal=ACTS.reduce((s,a)=>s+(a.cal||0),0);
+  const recent=[...ACTS].filter(a=>isTraining(a)&&a.date).sort((a,b)=>a.date>b.date?-1:a.date<b.date?1:0).slice(0,10);
+  const liveTag=IS_LIVE?'<span class="live-badge">live</span>':'';
 
-  document.getElementById('dash-content').innerHTML = `
-  <style>${dashStyle}</style>
+  document.getElementById('dash-content').innerHTML=`
   <div class="metric-row">
-    <div class="metric"><div class="ml">Training hours${liveTag}</div><div class="mv">${totHrs.toFixed(0)}h</div><div class="ms">All training activities</div></div>
-    <div class="metric"><div class="ml">Bike distance</div><div class="mv">${Math.round(totBikeKm)} km</div><div class="ms">${bikes.length} rides</div></div>
-    <div class="metric"><div class="ml">Swim distance</div><div class="mv">${(totSwimKm*1000).toFixed(0)} m</div><div class="ms">${swims.length} sessions</div></div>
-    <div class="metric"><div class="ml">Run distance</div><div class="mv">${totRunKm.toFixed(1)} km</div><div class="ms">${runs.length} sessions</div></div>
+    <div class="metric"><div class="ml">${icon('clock',11,'#3d5270')} Training hours${liveTag}</div><div class="mv">${totHrs.toFixed(0)}h</div><div class="ms">All activities</div></div>
+    <div class="metric"><div class="ml">${icon('bike',11,C.bike)} Bike distance</div><div class="mv">${Math.round(bikes.reduce((s,a)=>s+a.dist,0))} km</div><div class="ms">${bikes.length} rides</div></div>
+    <div class="metric"><div class="ml">${icon('swim',11,C.swim)} Swim distance</div><div class="mv">${Math.round(swims.reduce((s,a)=>s+a.dist,0)*1000)} m</div><div class="ms">${swims.length} sessions</div></div>
+    <div class="metric"><div class="ml">${icon('run',11,C.run)} Run distance</div><div class="mv">${runs.reduce((s,a)=>s+a.dist,0).toFixed(1)} km</div><div class="ms">${runs.length} sessions</div></div>
   </div>
   <div class="metric-row">
-    <div class="metric"><div class="ml">Total calories</div><div class="mv">${(totCal/1000).toFixed(1)}k</div><div class="ms">kcal burned</div></div>
-    <div class="metric"><div class="ml">This week load</div><div class="mv">${Math.round(lastWkEffort)}</div><div class="ms">relative effort</div></div>
-    <div class="metric"><div class="ml">Fitness (CTL)</div><div class="mv">${curCtl}</div><div class="ms">${IS_LIVE ? 'From intervals.icu' : 'Estimated from effort'}</div></div>
-    <div class="metric"><div class="ml">Form (TSB)</div><div class="mv" style="color:${curTsb>=0?'#3db89a':'#e07070'}">${curTsb>0?'+':''} ${curTsb}</div><div class="ms">${curTsb>=0?'Fresh':'Fatigued'}</div></div>
+    <div class="metric"><div class="ml">${icon('zap',11,'#3d5270')} Calories</div><div class="mv">${(totCal/1000).toFixed(1)}k</div><div class="ms">kcal burned</div></div>
+    <div class="metric"><div class="ml">${icon('trending',11,'#3d5270')} This week load</div><div class="mv">${Math.round(wkArr[wkArr.length-1]?.effort||0)}</div><div class="ms">relative effort</div></div>
+    <div class="metric"><div class="ml">${icon('trending',11,'#3d5270')} Fitness (CTL)</div><div class="mv">${curCtl}</div><div class="ms">${IS_LIVE?'From intervals.icu':'Estimated'}</div></div>
+    <div class="metric"><div class="ml">${icon('heart',11,'#3d5270')} Form (TSB)</div><div class="mv" style="color:${curTsb>=0?'#3db89a':'#e07070'}">${curTsb>0?'+':''}${curTsb}</div><div class="ms">${curTsb>=0?'Fresh':'Fatigued'}</div></div>
   </div>
   <div class="sec">Training mix by hours</div>
   <div class="ch" style="height:180px;"><canvas id="mixChart"></canvas></div>
   <div class="sec">Recent activities</div>
-  <table class="act">
-    <thead><tr><th>Date</th><th>Type</th><th>Distance</th><th>Time</th><th>Avg HR</th><th>Watts</th><th>Effort</th></tr></thead>
-    <tbody>${recent.map(a=>`<tr>
-      <td>${a.date.slice(5)}</td><td>${a.type}</td>
-      <td>${a.dist>0?a.dist.toFixed(1)+' km':'—'}</td>
-      <td>${Math.round(a.min)} min</td>
-      <td>${a.hr?Math.round(a.hr):'—'}</td>
-      <td>${a.watts?Math.round(a.watts)+'W':'—'}</td>
-      <td>${a.effort?Math.round(a.effort):'—'}</td>
-    </tr>`).join('')}</tbody>
-  </table>`;
+  <table class="act"><thead><tr><th>Date</th><th>Type</th><th>Distance</th><th>Time</th><th>Avg HR</th><th>Watts</th><th>Effort</th></tr></thead>
+  <tbody>${recent.map(a=>`<tr><td>${a.date.slice(5)}</td><td>${a.type}</td><td>${a.dist>0?a.dist.toFixed(1)+' km':'—'}</td><td>${Math.round(a.min)} min</td><td>${a.hr?Math.round(a.hr):'—'}</td><td>${a.watts?Math.round(a.watts)+'W':'—'}</td><td>${a.effort?Math.round(a.effort):'—'}</td></tr>`).join('')}</tbody></table>`;
 
-  const bikeH = bikes.reduce((s,a)=>s+a.min,0)/60;
-  const runH  = runs.reduce((s,a)=>s+a.min,0)/60;
-  const swimH = swims.reduce((s,a)=>s+a.min,0)/60;
-  destroyChart('mixChart');
-  charts.mixChart = new Chart(document.getElementById('mixChart'),{
-    type:'doughnut',
-    data:{ labels:['Bike','Run','Swim'], datasets:[{data:[+bikeH.toFixed(1),+runH.toFixed(1),+swimH.toFixed(1)], backgroundColor:[C.bike,C.run,C.swim], borderWidth:2, borderColor:'#0b0f1a'}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:true,position:'right',labels:{color:C.text,font:{size:11},padding:12,boxWidth:10,boxHeight:10}}, tooltip:{backgroundColor:'#0f1623',titleColor:'#dde4f0',bodyColor:'#6b82a0',borderColor:'rgba(255,255,255,0.1)',borderWidth:1} } }
-  });
+  const h=[bikes,runs,swims].map(arr=>arr.reduce((s,a)=>s+a.min,0)/60);
+  mkChart('mixChart','doughnut',
+    {labels:['Bike','Run','Swim'],datasets:[{data:h.map(v=>+v.toFixed(1)),backgroundColor:[C.bike,C.run,C.swim],borderWidth:2,borderColor:'#0b0f1a'}]},
+    {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'right',labels:{color:TICK,font:{size:11},padding:12,boxWidth:10,boxHeight:10}},tooltip:TOOLTIP}}
+  );
 }
 
-// ── FITNESS & FATIGUE ────────────────────────────────────────────────────────
 function dashFitness() {
-  const fd = getFitnessData();
-  const curCtl = fd.ctl[fd.ctl.length-1], curAtl = fd.atl[fd.atl.length-1], curTsb = fd.tsb[fd.tsb.length-1];
-  const liveNote = IS_LIVE ? '<strong>Live data.</strong> CTL, ATL and TSB are calculated by intervals.icu.' : '<strong>Estimated data.</strong> Connect for accurate CTL/ATL/TSB values.';
-
-  document.getElementById('dash-content').innerHTML = `
-  <style>${dashStyle}</style>
+  const fd=getFitnessData();
+  const cur=fd.ctl[fd.ctl.length-1]||0, curA=fd.atl[fd.atl.length-1]||0, curT=fd.tsb[fd.tsb.length-1]||0;
+  document.getElementById('dash-content').innerHTML=`
   <div class="metric-row">
-    <div class="metric"><div class="ml">Fitness (CTL)</div><div class="mv">${curCtl}</div><div class="ms">42-day avg — higher = fitter</div></div>
-    <div class="metric"><div class="ml">Fatigue (ATL)</div><div class="mv">${curAtl}</div><div class="ms">7-day avg — higher = more tired</div></div>
-    <div class="metric"><div class="ml">Form (TSB)</div><div class="mv" style="color:${curTsb>=0?'#3db89a':'#e07070'}">${curTsb>0?'+':''} ${curTsb}</div><div class="ms">CTL − ATL</div></div>
-    <div class="metric"><div class="ml">Peak fitness</div><div class="mv">${Math.max(...fd.ctl).toFixed(1)}</div><div class="ms">Best CTL in period</div></div>
+    <div class="metric"><div class="ml">Fitness (CTL)</div><div class="mv">${cur}</div><div class="ms">42-day avg</div></div>
+    <div class="metric"><div class="ml">Fatigue (ATL)</div><div class="mv">${curA}</div><div class="ms">7-day avg</div></div>
+    <div class="metric"><div class="ml">Form (TSB)</div><div class="mv" style="color:${curT>=0?'#3db89a':'#e07070'}">${curT>0?'+':''}${curT}</div><div class="ms">CTL − ATL</div></div>
+    <div class="metric"><div class="ml">Peak fitness</div><div class="mv">${Math.max(...fd.ctl).toFixed(1)}</div><div class="ms">Best CTL recorded</div></div>
   </div>
-  <div class="sec">Fitness · Fatigue · Form over time</div>
+  <div class="sec">Fitness · Fatigue · Form</div>
   <div class="ch" style="height:280px;"><canvas id="ffChart"></canvas></div>
-  <div class="note">${liveNote}<br><br>
-    <strong>CTL (blue):</strong> Chronic Training Load — your fitness. Builds slowly over 42 days.<br>
-    <strong>ATL (red):</strong> Acute Training Load — your fatigue. Responds quickly over 7 days.<br>
-    <strong>TSB (green):</strong> Training Stress Balance = CTL − ATL. Race day target: +5 to +15.
+  <div class="note">${IS_LIVE?'<strong>Live data.</strong> CTL/ATL/TSB from intervals.icu.':'<strong>Estimated.</strong> Connect for accurate values.'}<br><br>
+    <strong>CTL (blue):</strong> Chronic Training Load — fitness, builds over 42 days.<br>
+    <strong>ATL (red):</strong> Acute Training Load — fatigue, responds over 7 days.<br>
+    <strong>TSB (green):</strong> Form = CTL − ATL. Race day target: +5 to +15.
   </div>`;
-
-  destroyChart('ffChart');
-  charts.ffChart = new Chart(document.getElementById('ffChart'),{
-    type:'line',
-    data:{ labels:fd.labels, datasets:[
-      {label:'Fitness (CTL)',data:fd.ctl,borderColor:C.bike,backgroundColor:'rgba(26,111,196,0.08)',borderWidth:2,pointRadius:0,tension:0.3,fill:true},
-      {label:'Fatigue (ATL)',data:fd.atl,borderColor:C.run,backgroundColor:'rgba(192,57,43,0.06)',borderWidth:1.5,pointRadius:0,tension:0.3,fill:true},
-      {label:'Form (TSB)',data:fd.tsb,borderColor:C.swim,borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},
+  mkChart('ffChart','line',
+    {labels:fd.labels,datasets:[
+      {label:'Fitness (CTL)',data:fd.ctl,borderColor:C.bike,backgroundColor:'rgba(252,103,25,0.08)',borderWidth:2,pointRadius:0,tension:0.3,fill:true},
+      {label:'Fatigue (ATL)',data:fd.atl,borderColor:C.run, backgroundColor:'rgba(192,57,43,0.06)', borderWidth:1.5,pointRadius:0,tension:0.3,fill:true},
+      {label:'Form (TSB)',   data:fd.tsb,borderColor:C.swim,borderWidth:1.5,pointRadius:0,tension:0.3},
     ]},
-    options:{...baseOpts(), plugins:{ legend:{display:true,position:'top',labels:{color:C.text,font:{size:11},boxWidth:10,boxHeight:10,padding:12}}, tooltip:{mode:'index',intersect:false,backgroundColor:'#0f1623',titleColor:'#dde4f0',bodyColor:'#6b82a0',borderColor:'rgba(255,255,255,0.1)',borderWidth:1} } }
-  });
+    {responsive:true,maintainAspectRatio:false,scales:axisOpts(),plugins:{legend:LEGEND_TOP,tooltip:{...TOOLTIP,mode:'index',intersect:false}}}
+  );
 }
 
-// ── POWER & HR ───────────────────────────────────────────────────────────────
-function dashPower() {
-  const wattSessions = ACTS.filter(a=>isBike(a)&&a.watts);
-  const avgW = wattSessions.length ? wattSessions.reduce((s,a)=>s+a.watts,0)/wattSessions.length : 0;
-  const maxW = wattSessions.length ? Math.max(...wattSessions.map(a=>a.watts)) : 0;
-  const hrSessions = ACTS.filter(a=>isTraining(a)&&a.hr);
-  const avgHR = hrSessions.length ? hrSessions.reduce((s,a)=>s+a.hr,0)/hrSessions.length : 0;
-  const maxHR = ACTS.filter(a=>a.maxhr).length ? Math.max(...ACTS.filter(a=>a.maxhr).map(a=>a.maxhr)) : 0;
-
-  document.getElementById('dash-content').innerHTML = `
-  <style>${dashStyle}</style>
-  <div class="metric-row">
-    <div class="metric"><div class="ml">Avg bike power</div><div class="mv">${Math.round(avgW)}W</div><div class="ms">${wattSessions.length} sessions</div></div>
-    <div class="metric"><div class="ml">Peak session power</div><div class="mv">${maxW}W</div><div class="ms">Best avg watts</div></div>
-    <div class="metric"><div class="ml">Avg heart rate</div><div class="mv">${Math.round(avgHR)} bpm</div><div class="ms">All training sessions</div></div>
-    <div class="metric"><div class="ml">Max HR recorded</div><div class="mv">${maxHR} bpm</div><div class="ms">Peak across all sessions</div></div>
-  </div>
-  <div class="two">
-    <div><div class="sec">Avg power per session (W)</div><div class="ch" style="height:200px;"><canvas id="wattChart"></canvas></div></div>
-    <div><div class="sec">Avg HR per session (bpm)</div><div class="ch" style="height:200px;"><canvas id="hrChart"></canvas></div></div>
-  </div>
-  <div class="sec">HR zone distribution</div>
-  <div class="ch" style="height:160px;"><canvas id="hrDistChart"></canvas></div>
-  <div class="note"><strong>Estimated FTP ~105–115W</strong> based on sustained efforts. The 20 min test in W4 (Apr 12) will confirm your baseline.</div>`;
-
-  const hrS = [...hrSessions].sort((a,b)=>a.date>b.date?1:-1);
-  destroyChart('wattChart');
-  charts.wattChart = new Chart(document.getElementById('wattChart'),{
-    type:'bar',
-    data:{ labels:wattSessions.map(a=>a.date.slice(5)), datasets:[{data:wattSessions.map(a=>a.watts),backgroundColor:C.bike,borderRadius:0}] },
-    options:{...baseOpts('W'),scales:{...baseOpts('W').scales,x:{...baseOpts().scales.x,ticks:{...baseOpts().scales.x.ticks,maxTicksLimit:12}}}}
-  });
-  destroyChart('hrChart');
-  charts.hrChart = new Chart(document.getElementById('hrChart'),{
-    type:'line',
-    data:{ labels:hrS.map(a=>a.date.slice(5)), datasets:[
-      {data:hrS.map(a=>a.hr),borderColor:C.run,backgroundColor:'rgba(192,57,43,0.08)',borderWidth:1.5,pointRadius:2,tension:0.3,fill:true,label:'Avg HR'},
-      {data:hrS.map(a=>a.maxhr),borderColor:'rgba(192,57,43,0.3)',borderWidth:1,pointRadius:0,tension:0.3,fill:false,label:'Max HR'},
-    ]},
-    options:{...baseOpts('bpm'),plugins:{legend:{display:true,position:'top',labels:{color:C.text,font:{size:10},boxWidth:8,boxHeight:8,padding:8}},tooltip:{mode:'index',intersect:false,backgroundColor:'#0f1623',titleColor:'#dde4f0',bodyColor:'#6b82a0',borderColor:'rgba(255,255,255,0.1)',borderWidth:1}}}
-  });
-  const zones=[0,0,0,0,0];
-  hrSessions.forEach(a=>{ const h=a.hr; if(h<115)zones[0]++; else if(h<130)zones[1]++; else if(h<145)zones[2]++; else if(h<160)zones[3]++; else zones[4]++; });
-  destroyChart('hrDistChart');
-  charts.hrDistChart = new Chart(document.getElementById('hrDistChart'),{
-    type:'bar',
-    data:{ labels:['Z1 <115','Z2 115–129','Z3 130–144','Z4 145–159','Z5 160+'], datasets:[{data:zones,backgroundColor:['#0e7c65','#1a6fc4','#9a7c0a','#a03520','#8b1a1a'],borderRadius:0}] },
-    options:{...baseOpts('sessions'),indexAxis:'y',scales:{x:{...baseOpts().scales.x,ticks:{color:C.text,font:{size:10}}},y:{grid:{display:false},ticks:{color:C.text,font:{size:10}}}}}
-  });
-}
-
-// ── WEEKLY VOLUME ────────────────────────────────────────────────────────────
+// ── SPORT DASHBOARD HELPER ────────────────────────────────────────────────────
+// ── WEEKLY VOLUME ─────────────────────────────────────────────────────────────
 function dashVolume() {
   const wkArr = getWeeklyBuckets();
-  const wkLabels = wkArr.map(w=>w.key.replace(/\d{4}-/,''));
-  const totArr = wkArr.map(w=>+w.total.toFixed(1));
-  const maxTot = Math.max(...totArr);
-  const avgActive = (totArr.filter(v=>v>0).reduce((s,v)=>s+v,0)/totArr.filter(v=>v>0).length).toFixed(1);
+  const wkLbls = wkArr.map(w=>w.key.replace(/\d{4}-/,''));
+  const tots = wkArr.map(w=>+w.total.toFixed(1));
+  const avgAct = tots.filter(v=>v>0).length
+    ? (tots.filter(v=>v>0).reduce((s,v)=>s+v,0) / tots.filter(v=>v>0).length).toFixed(1) : 0;
 
-  document.getElementById('dash-content').innerHTML = `
-  <style>${dashStyle}</style>
+  document.getElementById('dash-content').innerHTML=`
   <div class="metric-row">
-    <div class="metric"><div class="ml">Peak week</div><div class="mv">${maxTot.toFixed(1)}h</div><div class="ms">Highest training week</div></div>
-    <div class="metric"><div class="ml">Avg active week</div><div class="mv">${avgActive}h</div><div class="ms">Excl. zero weeks</div></div>
+    <div class="metric"><div class="ml">Peak week</div><div class="mv">${Math.max(...tots).toFixed(1)}h</div><div class="ms">Highest training week</div></div>
+    <div class="metric"><div class="ml">Avg active week</div><div class="mv">${avgAct}h</div><div class="ms">Excl. zero weeks</div></div>
     <div class="metric"><div class="ml">Block 1 target</div><div class="mv">~5h</div><div class="ms">Per active week</div></div>
     <div class="metric"><div class="ml">Peak block target</div><div class="mv">~11h</div><div class="ms">Block 6 weeks</div></div>
   </div>
-  <div class="sec">Weekly training hours by discipline</div>
+  <div class="sec">Weekly hours by discipline</div>
   <div class="ch" style="height:240px;"><canvas id="volChart"></canvas></div>
   <div class="sec">Weekly relative effort (load)</div>
-  <div class="ch" style="height:160px;"><canvas id="effortChart"></canvas></div>`;
+  <div class="ch" style="height:150px;"><canvas id="effortChart"></canvas></div>`;
 
-  destroyChart('volChart');
-  charts.volChart = new Chart(document.getElementById('volChart'),{
-    type:'bar',
-    data:{ labels:wkLabels, datasets:[
-      {label:'Bike',data:wkArr.map(w=>+w.bike.toFixed(1)),backgroundColor:C.bike,stack:'s',borderRadius:0},
-      {label:'Run', data:wkArr.map(w=>+w.run.toFixed(1)), backgroundColor:C.run, stack:'s',borderRadius:0},
-      {label:'Swim',data:wkArr.map(w=>+w.swim.toFixed(1)),backgroundColor:C.swim,stack:'s',borderRadius:0},
+  mkChart('volChart','bar',
+    {labels:wkLbls, datasets:[
+      {label:'Bike', data:wkArr.map(w=>+w.bike.toFixed(1)),  backgroundColor:C.bike, stack:'s', borderRadius:0},
+      {label:'Run',  data:wkArr.map(w=>+w.run.toFixed(1)),   backgroundColor:C.run,  stack:'s', borderRadius:0},
+      {label:'Swim', data:wkArr.map(w=>+w.swim.toFixed(1)),  backgroundColor:C.swim, stack:'s', borderRadius:0},
     ]},
-    options:{...baseOpts('hours'),
-      scales:{x:{stacked:true,grid:{color:C.grid},ticks:{color:C.text,font:{size:10},maxRotation:45}},y:{stacked:true,grid:{color:C.grid},ticks:{color:C.text,font:{size:10},callback:v=>v+'h'}}},
-      plugins:{legend:{display:true,position:'top',labels:{color:C.text,font:{size:11},boxWidth:10,boxHeight:10,padding:12}},tooltip:{mode:'index',intersect:false,backgroundColor:'#0f1623',titleColor:'#dde4f0',bodyColor:'#6b82a0',borderColor:'rgba(255,255,255,0.1)',borderWidth:1}}
-    }
-  });
-  destroyChart('effortChart');
-  charts.effortChart = new Chart(document.getElementById('effortChart'),{
-    type:'bar',
-    data:{ labels:wkLabels, datasets:[{data:wkArr.map(w=>Math.round(w.effort)),backgroundColor:'rgba(26,111,196,0.5)',borderRadius:0,label:'Load'}] },
-    options:{...baseOpts('effort'),plugins:{legend:{display:false},tooltip:{backgroundColor:'#0f1623',titleColor:'#dde4f0',bodyColor:'#6b82a0',borderColor:'rgba(255,255,255,0.1)',borderWidth:1}}}
-  });
+    {responsive:true, maintainAspectRatio:false,
+     scales:{
+       x:{stacked:true,grid:{color:GRID},ticks:{color:TICK,font:{size:10},maxRotation:45}},
+       y:{stacked:true,grid:{color:GRID},ticks:{color:TICK,font:{size:10},callback:v=>v+'h'}}
+     },
+     plugins:{legend:LEGEND_TOP, tooltip:{...TOOLTIP,mode:'index',intersect:false}}}
+  );
+  mkChart('effortChart','bar',
+    {labels:wkLbls, datasets:[{data:wkArr.map(w=>Math.round(w.effort)), backgroundColor:'rgba(252,103,25,0.45)', borderRadius:0}]},
+    {responsive:true, maintainAspectRatio:false, scales:axisOpts('effort'), plugins:{legend:{display:false},tooltip:TOOLTIP}}
+  );
 }
 
-// ── SWIM ─────────────────────────────────────────────────────────────────────
-function dashSwim() {
-  const sd = swimData();
-  const cleanPace = sd.filter(s=>s.pace&&s.pace<4);
-  const avgPace = cleanPace.length ? cleanPace.reduce((s,a)=>s+a.pace,0)/cleanPace.length : 0;
-  const bestPace = cleanPace.length ? Math.min(...cleanPace.map(s=>s.pace)) : 0;
-  const maxDist = sd.length ? Math.max(...sd.map(s=>s.dist)) : 0;
+// ── SPORT HELPERS ─────────────────────────────────────────────────────────────
+function sportStatus(sport) {
+  const wn = getCurrentWeekNum();
+  const wl = weeksToRace();
+  const fd = IS_LIVE ? getFitnessData() : null;
 
-  document.getElementById('dash-content').innerHTML = `
-  <style>${dashStyle}</style>
+  if (sport === 'bike') {
+    const bs = ACTS.filter(isBike);
+    const totH = +(bs.reduce((s,a)=>s+(a.min||0),0)/60).toFixed(1);
+    const wS = bs.filter(a=>a.watts);
+    const avgW = wS.length ? Math.round(wS.reduce((s,a)=>s+a.watts,0)/wS.length) : null;
+    const sessionsThisBlock = bs.filter(a=>a.date >= (PLAN_START||'2026-03-16')).length;
+    let color, msg;
+    if (!IS_LIVE) {
+      if (wn <= 4)       { color='#FC6719'; msg=`Block 1 — building base aerobic fitness on the spinning bike. Keep every session Z2. ${wl} weeks to race.`; }
+      else if (wn <= 12) { color='#FC6719'; msg=`Build phase — bike volume and intensity both climbing. Long rides every Saturday are the priority.`; }
+      else if (wn <= 20) { color='#FC6719'; msg=`Build 2 — peak Abu Dhabi heat. All rides on Zwift indoors. Long Zwift sessions are the priority — same fitness, just cooler.`; }
+      else if (wn <= 26) { color='#FC6719'; msg=`Peak phase — brick sessions dominate. Bricks train your legs to run off the bike. Do not skip them.`; }
+      else               { color='#3db89a'; msg=`Taper — keep the legs sharp with short, crisp efforts. No long rides in the final two weeks.`; }
+    } else {
+      const wkArr = getWeeklyBuckets();
+      const recentBikeH = wkArr.slice(-2).reduce((s,w)=>s+w.bike,0);
+      if (recentBikeH >= 3.5)    { color='#3db89a'; msg=`Bike is tracking well — ${recentBikeH.toFixed(1)}h in the last two weeks. ${avgW?'Avg power: '+avgW+'W. ':''} Keep building the long rides.`; }
+      else if (recentBikeH >= 2)  { color='#ba7517'; msg=`Bike volume a little light recently (${recentBikeH.toFixed(1)}h last 2 weeks). Push the long Saturday ride — that is where most fitness gains come from.`; }
+      else                        { color='#c0392b'; msg=`Low bike volume recently (${recentBikeH.toFixed(1)}h last 2 weeks). Bike is your strongest discipline — do not let it slide. Prioritise Saturday long rides.`; }
+    }
+    return `<div style="border-left:3px solid ${color};background:#0f1623;padding:10px 14px;margin-bottom:1.25rem;font-size:11px;color:#dde4f0;line-height:1.6;">${msg}</div>`;
+  }
+
+  if (sport === 'run') {
+    const rs = ACTS.filter(isRun);
+    const paced = rs.filter(a=>a.dist>0.2&&a.min>0);
+    const avgPace = paced.length ? +(paced.reduce((s,a)=>s+(a.min/a.dist),0)/paced.length).toFixed(1) : null;
+    let color, msg;
+    if (!IS_LIVE) {
+      if (wn <= 4)       { color='#c0392b'; msg=`Block 1 — run/walk only. 2 min run / 2 min walk. The goal is habit, not fitness. Every session counts.`; }
+      else if (wn <= 8)  { color='#c0392b'; msg=`Base 2 — moving to 3:2 run/walk. Your run base is almost zero. Be patient, do not push the pace.`; }
+      else if (wn <= 12) { color='#ba7517'; msg=`Build 1 — 4:2 run/walk. Consistency is the only goal. If something hurts, walk. If tired, shorten.`; }
+      else if (wn <= 16) { color='#ba7517'; msg=`Build 2 — transitioning to continuous running this block. The biggest milestone in the plan. Go slow.`; }
+      else if (wn <= 26) { color='#3db89a'; msg=`Race-specific — long runs reaching 2h+. Your biggest limiter is becoming a strength. Trust the process.`; }
+      else               { color='#3db89a'; msg=`Taper — your run fitness is built. Short easy runs only. The hay is in the barn.`; }
+    } else {
+      const wkArr = getWeeklyBuckets();
+      const recentRunH = wkArr.slice(-2).reduce((s,w)=>s+w.run,0);
+      if (recentRunH === 0 && wn > 1)   { color='#c0392b'; msg=`No running logged in the last two weeks. This is your key limiter — missing run sessions will hurt most on race day. Get the sessions in.`; }
+      else if (avgPace && avgPace < 7)   { color='#3db89a'; msg=`Run is progressing — avg pace ${avgPace} min/km and recent sessions logged. Stay consistent and let the long run build.`; }
+      else if (recentRunH > 0)           { color='#ba7517'; msg=`Run sessions happening but low volume (${recentRunH.toFixed(1)}h last 2 weeks). Increase frequency before increasing duration.`; }
+      else                               { color='#c0392b'; msg=`Run is the key limiter for your 70.3. Every missed run session matters more than a missed bike session.`; }
+    }
+    return `<div style="border-left:3px solid ${color};background:#0f1623;padding:10px 14px;margin-bottom:1.25rem;font-size:11px;color:#dde4f0;line-height:1.6;">${msg}</div>`;
+  }
+
+  if (sport === 'swim') {
+    const sw = ACTS.filter(isSwim);
+    const withDist = sw.filter(a=>a.dist>0.1);
+    const clean = withDist.filter(a=>{ const p=a.min/a.dist/10; return p>1&&p<4; });
+    const avgPace = clean.length ? +(clean.reduce((s,a)=>s+(a.min/a.dist/10),0)/clean.length).toFixed(2) : null;
+    const maxDist = withDist.length ? Math.max(...withDist.map(a=>Math.round(a.dist*1000))) : 0;
+    let color, msg;
+    if (!IS_LIVE) {
+      if (wn <= 4)       { color='#2176c7'; msg=`Block 1 — 3 swims per week, 25m pool in Thailand. Focus on stroke efficiency, not speed. ${wl} weeks to race.`; }
+      else if (wn <= 12) { color='#2176c7'; msg=`Build phase — swim volume climbing to 3,500–4,500m per week. Race distance is 1,900m.`; }
+      else if (wn <= 20) { color='#2176c7'; msg=`Race-specific — sessions now include 1,900m sets at race pace. You should feel comfortable at this distance.`; }
+      else               { color='#3db89a'; msg=`Peak/taper — swim is your best bet for a strong start. Keep the race-pace sets, reduce volume in final 2 weeks.`; }
+    } else {
+      if (avgPace && avgPace <= 2.2 && maxDist >= 1500) { color='#3db89a'; msg=`Swim is in good shape — avg pace ${avgPace} min/100m, longest session ${maxDist}m. You are on course for a solid swim split.`; }
+      else if (avgPace && avgPace <= 2.5)                { color='#2176c7'; msg=`Swim pace at ${avgPace} min/100m — target is 2.1 for a 40 min split. Longest session: ${maxDist}m. Keep building distance.`; }
+      else if (!avgPace)                                  { color='#ba7517'; msg=`No clean swim data yet. Get consistent pool sessions logged so we can track pace progress.`; }
+      else                                               { color='#ba7517'; msg=`Swim pace needs work (${avgPace} min/100m vs 2.1 target). Focus on technique — a stroke coach session would help more than extra volume right now.`; }
+    }
+    return `<div style="border-left:3px solid ${color};background:#0f1623;padding:10px 14px;margin-bottom:1.25rem;font-size:11px;color:#dde4f0;line-height:1.6;">${msg}</div>`;
+  }
+  return '';
+}
+
+function sportMetrics(acts) {
+  const hHrs = acts.filter(a=>a.hr);
+  return {
+    n:      acts.length,
+    totKm:  acts.reduce((s,a)=>s+(a.dist||0),0),
+    totMin: acts.reduce((s,a)=>s+(a.min||0),0),
+    avgHR:  hHrs.length ? Math.round(hHrs.reduce((s,a)=>s+a.hr,0)/hHrs.length) : null,
+    maxHR:  hHrs.length ? Math.max(...hHrs.map(a=>a.maxhr||a.hr)) : null,
+  };
+}
+function metricCard(label, val, sub, ico='') {
+  const icoPart = ico ? icon(ico, 11, '#3d5270') + ' ' : '';
+  return `<div class="metric"><div class="ml">${icoPart}${label}</div><div class="mv">${val}</div><div class="ms">${sub}</div></div>`;
+}
+
+// ── BIKE ──────────────────────────────────────────────────────────────────────
+function dashBike() {
+  const bs = ACTS.filter(isBike).sort((a,b)=>a.date>b.date?1:-1);
+  const wS = bs.filter(a=>a.watts);
+  const m  = sportMetrics(bs);
+  const avgSpd = bs.length ? +(bs.filter(a=>a.spd>0).reduce((s,a)=>s+a.spd,0)/Math.max(1,bs.filter(a=>a.spd>0).length)).toFixed(1) : 0;
+  const bestSpd= bs.length ? +Math.max(...bs.map(a=>a.spd||0)).toFixed(1) : 0;
+  const avgW   = wS.length ? Math.round(wS.reduce((s,a)=>s+a.watts,0)/wS.length) : null;
+  const maxW   = wS.length ? Math.max(...wS.map(a=>a.watts)) : null;
+  const totH   = (m.totMin/60).toFixed(0);
+
+  document.getElementById('dash-content').innerHTML=`
   <div class="metric-row">
-    <div class="metric"><div class="ml">Sessions</div><div class="mv">${sd.length}</div><div class="ms">Total swims logged</div></div>
-    <div class="metric"><div class="ml">Best pace</div><div class="mv">${bestPace.toFixed(2)}</div><div class="ms">min / 100m</div></div>
-    <div class="metric"><div class="ml">Avg pace</div><div class="mv">${avgPace.toFixed(2)}</div><div class="ms">min / 100m (clean sessions)</div></div>
-    <div class="metric"><div class="ml">Longest session</div><div class="mv">${maxDist}m</div><div class="ms">Race distance: 1,900m</div></div>
+    ${metricCard('Sessions', m.n, Math.round(m.totKm)+' km &middot; '+totH+'h total', 'bike')}
+    ${metricCard('Avg speed', avgSpd ? avgSpd+' km/h' : '&mdash;', 'Best: '+bestSpd+' km/h', 'gauge')}
+    ${metricCard('Avg power', avgW ? avgW+'W' : '&mdash;', maxW ? 'Peak '+maxW+'W &middot; Est FTP ~110W' : 'No power data', 'zap')}
+    ${metricCard('Avg HR', m.avgHR ? m.avgHR+' bpm' : '&mdash;', m.maxHR ? 'Max '+m.maxHR+' bpm' : 'No HR data', 'heart')}
   </div>
+  ${sportStatus('bike')}
   <div class="two">
-    <div><div class="sec">Distance per session (m)</div><div class="ch" style="height:200px;"><canvas id="swimDistChart"></canvas></div></div>
-    <div><div class="sec">Pace per session (min/100m)</div><div class="ch" style="height:200px;"><canvas id="swimPaceChart"></canvas></div></div>
+    <div>
+      <div class="sec">Speed per session (km/h)</div>
+      <div class="ch" style="height:190px;"><canvas id="bikeSpeedChart"></canvas></div>
+    </div>
+    <div>
+      <div class="sec">Avg power per session (W)</div>
+      <div class="ch" style="height:190px;"><canvas id="bikePowerChart"></canvas></div>
+    </div>
   </div>
+  <div class="sec">Duration per session (min)</div>
+  <div class="ch" style="height:140px;"><canvas id="bikeDurChart"></canvas></div>
   <div class="note">
-    <strong>Race target:</strong> 1,900m at 2.1 min/100m ≈ 40 min swim split. Your clean pace is consistently 2.0–2.3 min/100m — on track.<br>
-    <strong>Goal by Block 5:</strong> 2,500m sessions at sub-2.1 min/100m pace.
+    <strong>Race target:</strong> 90 km at ~25 km/h avg &mdash; 3h 36min bike split.
+    Peak long rides reach 4h in Block 6. FTP test W4 (Apr 12).
+    ${avgW ? 'Current avg power: <strong>'+avgW+'W</strong>. Target race power: ~120W (Z2–Z3).' : ''}
   </div>`;
 
-  const cleanSwims = sd.filter(s=>s.dist>300);
-  destroyChart('swimDistChart');
-  charts.swimDistChart = new Chart(document.getElementById('swimDistChart'),{
-    type:'bar',
-    data:{ labels:cleanSwims.map(s=>s.date.slice(5)), datasets:[{data:cleanSwims.map(s=>s.dist),backgroundColor:C.swim,borderRadius:0}] },
-    options:{...baseOpts('m')}
-  });
-  const paceSwims = sd.filter(s=>s.pace&&s.pace<6&&s.dist>300);
-  destroyChart('swimPaceChart');
-  charts.swimPaceChart = new Chart(document.getElementById('swimPaceChart'),{
-    type:'line',
-    data:{ labels:paceSwims.map(s=>s.date.slice(5)), datasets:[{data:paceSwims.map(s=>s.pace),borderColor:C.swim,backgroundColor:'rgba(14,124,101,0.1)',borderWidth:2,pointRadius:4,tension:0.2,fill:true}] },
-    options:{...baseOpts('min/100m'),scales:{...baseOpts().scales,y:{...baseOpts().scales.y,reverse:true,ticks:{color:C.text,font:{size:10},callback:v=>v.toFixed(1)}}}}
-  });
+  const lbs = bs.map(a=>(a.date||'').slice(5));
+  mkChart('bikeSpeedChart','line',
+    {labels:lbs, datasets:[{data:bs.map(a=>a.spd||0), borderColor:C.bike, backgroundColor:'rgba(252,103,25,0.08)', borderWidth:2, pointRadius:3, tension:0.3, fill:true}]},
+    {responsive:true, maintainAspectRatio:false, scales:axisOpts('km/h'), plugins:{legend:{display:false},tooltip:TOOLTIP}});
+  mkChart('bikePowerChart','bar',
+    {labels:wS.map(a=>(a.date||'').slice(5)), datasets:[{data:wS.map(a=>a.watts||0), backgroundColor:C.bike, borderRadius:0}]},
+    {responsive:true, maintainAspectRatio:false, scales:{...axisOpts('W'),x:{...axisOpts().x,ticks:{...axisOpts().x.ticks,maxTicksLimit:14}}}, plugins:{legend:{display:false},tooltip:TOOLTIP}});
+  mkChart('bikeDurChart','bar',
+    {labels:lbs, datasets:[{data:bs.map(a=>Math.round(a.min||0)), backgroundColor:'rgba(252,103,25,0.35)', borderRadius:0}]},
+    {responsive:true, maintainAspectRatio:false, scales:axisOpts('min'), plugins:{legend:{display:false},tooltip:TOOLTIP}});
 }
 
-// ── ROUTER ───────────────────────────────────────────────────────────────────
+// ── RUN ───────────────────────────────────────────────────────────────────────
+function dashRun() {
+  const rs = ACTS.filter(isRun).sort((a,b)=>a.date>b.date?1:-1);
+  const m  = sportMetrics(rs);
+  const paced   = rs.filter(a=>a.dist>0.2 && a.min>0);
+  const avgPace = paced.length ? +(paced.reduce((s,a)=>s+(a.min/a.dist),0)/paced.length).toFixed(1) : null;
+  const bestPace= paced.length ? +Math.min(...paced.map(a=>a.min/a.dist)).toFixed(1) : null;
+  const maxDist = rs.length   ? +Math.max(...rs.map(a=>a.dist||0)).toFixed(1) : 0;
+  const totH    = (m.totMin/60).toFixed(1);
+
+  document.getElementById('dash-content').innerHTML=`
+  <div class="metric-row">
+    ${metricCard('Sessions', m.n, m.totKm.toFixed(1)+' km &middot; '+totH+'h total', 'run')}
+    ${metricCard('Avg pace', avgPace ? avgPace+' min/km' : '&mdash;', 'All runs with distance', 'timer')}
+    ${metricCard('Best pace', bestPace ? bestPace+' min/km' : '&mdash;', 'Fastest avg pace recorded', 'flag')}
+    ${metricCard('Avg HR', m.avgHR ? m.avgHR+' bpm' : '&mdash;', m.maxHR ? 'Max '+m.maxHR+' bpm' : 'No HR data', 'heart')}
+  </div>
+  ${sportStatus('run')}
+  <div class="two">
+    <div>
+      <div class="sec">Pace per session (min/km &mdash; lower is faster)</div>
+      <div class="ch" style="height:190px;"><canvas id="runPaceChart"></canvas></div>
+    </div>
+    <div>
+      <div class="sec">Distance per session (km)</div>
+      <div class="ch" style="height:190px;"><canvas id="runDistChart"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">HR per session (bpm)</div>
+  <div class="ch" style="height:140px;"><canvas id="runHRChart"></canvas></div>
+  <div class="note">
+    <strong>Key limiter.</strong> Run base is almost zero — this is the hardest part of your 70.3.
+    Plan builds from run/walk (Block 1) to 130 min continuous Z2 (Block 6).
+    Race run: 21.1 km. Longest run so far: <strong>${maxDist} km</strong>.
+    ${avgPace ? 'Current avg pace: <strong>'+avgPace+' min/km</strong>. Race pace target: ~7:00 min/km.' : ''}
+  </div>`;
+
+  mkChart('runPaceChart','line',
+    {labels:paced.map(a=>(a.date||'').slice(5)), datasets:[{data:paced.map(a=>+(a.min/a.dist).toFixed(1)), borderColor:C.run, backgroundColor:'rgba(192,57,43,0.08)', borderWidth:2, pointRadius:4, tension:0.3, fill:true}]},
+    {responsive:true, maintainAspectRatio:false,
+     scales:{x:axisOpts().x, y:{...axisOpts().y, reverse:true, ticks:{color:TICK,font:{size:10},callback:v=>v.toFixed(1)}}},
+     plugins:{legend:{display:false},tooltip:TOOLTIP}});
+  mkChart('runDistChart','bar',
+    {labels:rs.map(a=>(a.date||'').slice(5)), datasets:[{data:rs.map(a=>a.dist||0), backgroundColor:C.run, borderRadius:0}]},
+    {responsive:true, maintainAspectRatio:false, scales:axisOpts('km'), plugins:{legend:{display:false},tooltip:TOOLTIP}});
+  const hrR = rs.filter(a=>a.hr);
+  mkChart('runHRChart','line',
+    {labels:hrR.map(a=>(a.date||'').slice(5)), datasets:[{data:hrR.map(a=>a.hr), borderColor:C.run, backgroundColor:'rgba(192,57,43,0.06)', borderWidth:1.5, pointRadius:3, tension:0.3, fill:true}]},
+    {responsive:true, maintainAspectRatio:false, scales:axisOpts('bpm'), plugins:{legend:{display:false},tooltip:TOOLTIP}});
+}
+
+// ── SWIM ──────────────────────────────────────────────────────────────────────
+function dashSwim() {
+  const sw = ACTS.filter(isSwim).sort((a,b)=>a.date>b.date?1:-1);
+  const m  = sportMetrics(sw);
+  const withDist = sw.filter(a=>a.dist>0.1);
+  const paced    = withDist.filter(a=>{ const p=a.min/a.dist/10; return p>1&&p<6; });
+  const clean    = paced.filter(a=>a.min/a.dist/10 < 4);
+  const avgPace  = clean.length ? +(clean.reduce((s,a)=>s+(a.min/a.dist/10),0)/clean.length).toFixed(2) : null;
+  const bestPace = clean.length ? +Math.min(...clean.map(a=>a.min/a.dist/10)).toFixed(2) : null;
+  const maxDist  = withDist.length ? Math.max(...withDist.map(a=>Math.round(a.dist*1000))) : 0;
+  const totM     = Math.round(m.totKm*1000);
+
+  document.getElementById('dash-content').innerHTML=`
+  <div class="metric-row">
+    ${metricCard('Sessions', m.n, totM+' m &middot; '+(m.totMin/60).toFixed(0)+'h total', 'swim')}
+    ${metricCard('Avg pace', avgPace ? avgPace+' /100m' : '&mdash;', 'Clean sessions only', 'timer')}
+    ${metricCard('Best pace', bestPace ? bestPace+' /100m' : '&mdash;', 'Race target: 2.1 /100m', 'flag')}
+    ${metricCard('Avg HR', m.avgHR ? m.avgHR+' bpm' : '&mdash;', m.maxHR ? 'Max '+m.maxHR+' bpm' : 'No HR data', 'heart')}
+  </div>
+  ${sportStatus('swim')}
+  <div class="two">
+    <div>
+      <div class="sec">Pace per session (min/100m &mdash; lower is faster)</div>
+      <div class="ch" style="height:190px;"><canvas id="swimPaceChart"></canvas></div>
+    </div>
+    <div>
+      <div class="sec">Distance per session (m)</div>
+      <div class="ch" style="height:190px;"><canvas id="swimDistChart"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">HR per session (bpm)</div>
+  <div class="ch" style="height:140px;"><canvas id="swimHRChart"></canvas></div>
+  <div class="note">
+    <strong>Race target:</strong> 1,900m at 2.1 min/100m &asymp; 40 min swim split.
+    Longest session so far: <strong>${maxDist}m</strong>.
+    Goal by Block 5: comfortable 2,500m at sub-2.1 pace.
+    ${avgPace ? 'Current avg pace: <strong>'+avgPace+' min/100m</strong>.' : ''}
+  </div>`;
+
+  mkChart('swimPaceChart','line',
+    {labels:paced.map(a=>(a.date||'').slice(5)), datasets:[{data:paced.map(a=>+(a.min/a.dist/10).toFixed(2)), borderColor:C.swim, backgroundColor:'rgba(33,118,199,0.08)', borderWidth:2, pointRadius:4, tension:0.3, fill:true}]},
+    {responsive:true, maintainAspectRatio:false,
+     scales:{x:axisOpts().x, y:{...axisOpts().y, reverse:true, ticks:{color:TICK,font:{size:10},callback:v=>v.toFixed(2)}}},
+     plugins:{legend:{display:false},tooltip:TOOLTIP}});
+  mkChart('swimDistChart','bar',
+    {labels:withDist.map(a=>(a.date||'').slice(5)), datasets:[{data:withDist.map(a=>Math.round(a.dist*1000)), backgroundColor:C.swim, borderRadius:0}]},
+    {responsive:true, maintainAspectRatio:false, scales:axisOpts('m'), plugins:{legend:{display:false},tooltip:TOOLTIP}});
+  const hrS = sw.filter(a=>a.hr);
+  mkChart('swimHRChart','line',
+    {labels:hrS.map(a=>(a.date||'').slice(5)), datasets:[{data:hrS.map(a=>a.hr), borderColor:C.swim, backgroundColor:'rgba(33,118,199,0.06)', borderWidth:1.5, pointRadius:3, tension:0.3, fill:true}]},
+    {responsive:true, maintainAspectRatio:false, scales:axisOpts('bpm'), plugins:{legend:{display:false},tooltip:TOOLTIP}});
+}
+
+
+const TAB_ICONS = {overview:'grid',fitness:'trending',volume:'bar',swim:'swim',bike:'bike',run:'run'};
+const TAB_COLORS= {swim:C.swim, bike:C.bike, run:C.run};
+
 function showDash(tab, btn) {
   document.querySelectorAll('#dash-nav .blk-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   Object.values(charts).forEach(c=>c.destroy());
-  charts = {};
-  if(tab==='overview') dashOverview();
-  else if(tab==='fitness') dashFitness();
-  else if(tab==='power') dashPower();
-  else if(tab==='volume') dashVolume();
-  else if(tab==='swim') dashSwim();
+  Object.keys(charts).forEach(k=>delete charts[k]);
+  ({overview:dashOverview,fitness:dashFitness,volume:dashVolume,swim:dashSwim,bike:dashBike,run:dashRun})[tab]?.();
+}
+
+// Inject icons into tab buttons once DOM is ready
+function initTabIcons() {
+  document.querySelectorAll('#dash-nav .blk-btn').forEach(btn => {
+    const tab = btn.getAttribute('data-tab');
+    if (!tab || btn.querySelector('svg')) return;
+    const iName = TAB_ICONS[tab];
+    if (!iName) return;
+    const color = TAB_COLORS[tab] || 'currentColor';
+    btn.innerHTML = icon(iName, 12, color) + '&nbsp;' + btn.textContent;
+  });
 }
 
 dashOverview();
+initTabIcons();
 </script>
 </body>
 </html>
