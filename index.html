@@ -101,6 +101,7 @@
   .day-card.done { background: var(--bg); opacity: 0.6; }
   .day-card.today { border-color: var(--accent); border-left-width: 2px; }
   .day-card.race-day { border-color: var(--gold); border-left-width: 2px; background: #1a1400; }
+  .day-card.past { opacity: 0.45; }
 
   .day-name { font-family: 'Barlow Condensed', sans-serif; font-size: 9px; font-weight: 600; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.1em; }
   .day-type { font-size: 11px; font-weight: 500; color: var(--text); margin-bottom: 3px; line-height: 1.4; }
@@ -126,11 +127,42 @@
 </head>
 <body>
 
+<!-- ── INTERVALS.ICU FLOATING WIDGET ── -->
+<div style="position:fixed;top:14px;right:16px;z-index:999;">
+  <button onclick="toggleSettings()" id="settings-btn"
+    style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:7px 14px;border:1px solid rgba(255,255,255,0.13);background:#0f1623;color:#6b82a0;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s;">
+    <span id="conn-dot" style="width:6px;height:6px;border-radius:50%;background:#3d5270;flex-shrink:0;"></span>
+    <span id="settings-btn-label">intervals.icu</span>
+    <span id="last-refresh" style="font-size:9px;color:#3d5270;margin-left:4px;"></span>
+  </button>
+  <div id="settings-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:340px;background:#0f1623;border:1px solid rgba(255,255,255,0.13);padding:16px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#3d5270;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.07);">Connect intervals.icu</div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:10px;color:#3d5270;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.08em;">Athlete ID</div>
+      <input id="inp-athlete" type="text" placeholder="e.g. i12345" style="width:100%;background:#151e2e;border:1px solid rgba(255,255,255,0.1);color:#dde4f0;padding:7px 10px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10px;color:#3d5270;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.08em;">API Key</div>
+      <input id="inp-apikey" type="password" placeholder="Settings → Developer Settings" style="width:100%;background:#151e2e;border:1px solid rgba(255,255,255,0.1);color:#dde4f0;padding:7px 10px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;">
+    </div>
+    <button onclick="connectAndFetch()" style="width:100%;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:9px;border:1px solid #1a6fc4;background:#0d3f6e;color:#5a9ee0;cursor:pointer;">Fetch data</button>
+    <div style="font-size:10px;color:#3d5270;margin-top:8px;line-height:1.5;">Athlete ID: from your intervals.icu profile URL. API key: Settings → Developer Settings → Generate API Key. Saved in your browser.</div>
+    <div id="fetch-error" style="display:none;font-size:11px;color:#e07070;margin-top:8px;padding:6px 10px;background:rgba(192,57,43,0.1);border-left:2px solid #c0392b;"></div>
+  </div>
+</div>
+
 <div class="race-banner">
   <strong>ALVARO — ROAD TO IRONMAN 70.3</strong>
   <span>38 weeks &nbsp;·&nbsp; 7 blocks &nbsp;·&nbsp; Swim 1.9k &nbsp;·&nbsp; Bike 90k &nbsp;·&nbsp; Run 21.1k</span>
 </div>
 
+<!-- VERDICT BAR -->
+<div id="verdict-bar" style="margin-bottom:1rem;padding:12px 16px;border-left:3px solid #3d5270;background:#0f1623;">
+  <span id="verdict-text" style="font-size:13px;color:#6b82a0;line-height:1.6;">Loading training assessment...</span>
+</div>
+
+<!-- STATUS INDICATOR -->
+<div id="status-indicator" style="display:none;margin-bottom:1.25rem;"></div>
 <div class="block-nav" id="block-nav"></div>
 <div id="block-desc-area"></div>
 <div class="week-nav" id="week-nav"></div>
@@ -138,13 +170,63 @@
 <div id="week-display"></div>
 
 <script>
+// ── GLOBALS shared across both scripts ───────────────────────────────────────
+var IS_LIVE = false;
+var WELLNESS = null;
+var ACTS = [];
+
 const T = { bike:'tag-bike', run:'tag-run', swim:'tag-swim', brick:'tag-brick', rest:'tag-rest', race:'tag-race', done:'tag-done' };
 
 const ALL = [
+  { num:0, label:'PAST', btnCls:'past', dates:'Nov 2025 – Mar 15 2026',
+    desc:'<strong>Pre-plan history (Nov 2025 – Mar 15 2026):</strong> Training logged before the structured plan began. Assumed compliant. Shows actual Strava/intervals.icu activities.',
+    weeks:[
+      { label:'Nov–Dec', weekStart:'2025-11-16', wCls:'past', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run 0m'},{c:'#1A9E75',l:'Swim ~500m'}], days:[
+        {d:'Nov 16',t:'bike',tl:'Ride',ty:'12.5 km',de:'Back on the saddle. 54 min, 13.9 km/h avg. First ride after a break.'},
+        {d:'Nov 18',t:'rest',tl:'Walk',ty:'1.2 km walk',de:'Easy walk.',cl:'rest'},
+        {d:'Nov 23',t:'bike',tl:'Ride',ty:'20.2 km',de:'Morning ride, 71 min, 17.0 km/h avg.'},
+        {d:'Nov 29',t:'bike',tl:'Ride',ty:'28.2 km',de:'Building endurance. 93 min, 18.2 km/h avg.'},
+        {d:'Dec 2',t:'swim',tl:'Swim',ty:'500 m',de:'First swim. 13 min.'},
+        {d:'Dec 13',t:'bike',tl:'Ride',ty:'9.1 km',de:'Short morning ride. 29 min, 69W avg, HR 132.'},
+        {d:'Dec 14',t:'bike',tl:'Ride',ty:'38.4 km',de:'Long ride. 139 min, 51W avg, HR 135.'},
+        ],
+      },
+      { label:'Dec–Jan', weekStart:'2025-12-20', wCls:'past', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run 0m'},{c:'#1A9E75',l:'Swim ~1,000m'}], days:[
+        {d:'Dec 15',t:'swim',tl:'Swim',ty:'500 m',de:'Evening swim. 12 min, HR 127.'},
+        {d:'Dec 20',t:'bike',tl:'Ride',ty:'22.1 km',de:'81 min, 75W avg, HR 138.'},
+        {d:'Dec 22',t:'bike',tl:'Ride',ty:'44.3 km',de:'Lunch ride. 155 min, 73W avg, HR 144.'},
+        {d:'Dec 27',t:'bike',tl:'Ride',ty:'14.2 km',de:'44 min, 74W avg, HR 140.'},
+        {d:'Dec 28',t:'bike',tl:'Ride',ty:'22.3 km',de:'75 min, 75W avg, HR 135.'},
+        {d:'Jan 4',t:'bike',tl:'Ride',ty:'61.4 km',de:'Longest ride. 207 min, HR 132. Big aerobic effort.'},
+        {d:'Jan 18',t:'swim',tl:'Swim',ty:'450 m',de:'10 min, HR 130.'},
+        ],
+      },
+      { label:'Jan Zwift', weekStart:'2026-01-08', wCls:'past', vol:[{c:'#4A7DD4',l:'Zwift ~10h'},{c:'#E24B4A',l:'Run 0m'},{c:'#1A9E75',l:'Swim ~1,000m'}], days:[
+        {d:'Jan 8',t:'bike',tl:'Zwift',ty:'24.6 km',de:'85 min, 91W avg, HR 144. First Zwift session.'},
+        {d:'Jan 9',t:'bike',tl:'Zwift',ty:'22.1 km',de:'59 min, 95W avg.'},
+        {d:'Jan 11',t:'bike',tl:'Zwift',ty:'19.8 km',de:'65 min, 109W avg, HR 151.'},
+        {d:'Jan 14',t:'bike',tl:'Zwift',ty:'19.8 km',de:'65 min, 109W avg, HR 151. Peak effort.'},
+        {d:'Jan 17',t:'bike',tl:'Zwift',ty:'23.9 km',de:'66 min, 121W avg. Highest power of this period.'},
+        {d:'Jan 22',t:'swim',tl:'Swim',ty:'500 m',de:'11 min, HR 107.'},
+        {d:'Jan 25',t:'bike',tl:'Zwift',ty:'25.0 km',de:'81 min, 72W avg. Recovery ride.'},
+        ],
+      },
+      { label:'Feb–Mar', weekStart:'2026-02-01', wCls:'past', vol:[{c:'#4A7DD4',l:'Zwift ~8h'},{c:'#E24B4A',l:'Run ~25m'},{c:'#1A9E75',l:'Swim ~4,000m'}], days:[
+        {d:'Feb 8',t:'bike',tl:'Ride',ty:'36.7 km',de:'Outdoor ride. 120 min, HR avg 108.'},
+        {d:'Feb 14',t:'swim',tl:'Swim',ty:'1,300 m',de:'26 min, 2.0 min/100m. Best pace session.'},
+        {d:'Feb 15',t:'bike',tl:'Zwift',ty:'17.2 km',de:'46 min, 141W avg — peak power recorded.'},
+        {d:'Feb 21',t:'bike',tl:'Zwift',ty:'70.1 km',de:'193 min, 85W avg. Longest Zwift ride.'},
+        {d:'Feb 28',t:'swim',tl:'Swim',ty:'1,268 m',de:'60 min, HR 117.'},
+        {d:'Mar 12',t:'swim',tl:'Swim',ty:'1,050 m',de:'22 min, 2.1 min/100m.'},
+        {d:'Mar 14',t:'run',tl:'Run',ty:'1.5 km',de:'18 min, HR 113. First run session.'},
+        ],
+      },
+    ]
+  },
   { num:1, label:'B1 — Base 1', btnCls:'', dates:'Mar 17 – Apr 13',
     desc:'<strong>Block 1 — Base 1 (Mar 17 – Apr 13):</strong> Thailand. Spinning bike + Zwift treadmill + 25m pool. All three disciplines introduced. Run/walk at 2:2. Swim builds 1,500m→2,000m. Saturday long bike 75–90 min. Ends with 20 min bike test.',
     weeks:[
-      { label:'W1', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h 20m'},{c:'#E24B4A',l:'Run ~50m'},{c:'#1A9E75',l:'Swim ~3,000m'}], days:[
+      { label:'W1', weekStart:'2026-03-16', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h 20m'},{c:'#E24B4A',l:'Run ~50m'},{c:'#1A9E75',l:'Swim ~3,000m'}], days:[
         {d:'Mon 16',t:'rest',tl:'Rest',ty:'Rest',de:'Nothing logged.',cl:'rest'},
         {d:'Tue 17',t:'done',tl:'✓ Done',ty:'Zwift run 25 min',de:'2.6 km easy Z2 run. Done.',cl:'done'},
         {d:'Wed 18',t:'bike',tl:'Bike — Z2',ty:'45 min spin',de:'Pure aerobic Z2. Cadence 85–90 rpm. Conversational throughout.',cl:'today'},
@@ -153,7 +235,7 @@ const ALL = [
         {d:'Sat 21',t:'swim',tl:'Swim',ty:'1,500 m',de:'400m easy → 5×100m hard (15s rest) → 400m Z2 → 200m cool-down.'},
         {d:'Sun 22',t:'bike',tl:'Bike — Long Z2',ty:'75–90 min spin',de:'Long aerobic ride. Z2 only.'},
       ]},
-      { label:'W2', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h 45m'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,600m'}], days:[
+      { label:'W2', weekStart:'2026-03-23', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h 45m'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,600m'}], days:[
         {d:'Mon 23',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'2 min run / 2 min walk × 5. Easy Z2.'},
         {d:'Tue 24',t:'bike',tl:'Bike — Z2',ty:'50 min spin',de:'5 min longer than W1. Aerobic base.'},
         {d:'Wed 25',t:'swim',tl:'Swim',ty:'1,800 m',de:'400m warm-up → 8×100m Z2 (20s rest) → 600m steady → 200m cool-down.'},
@@ -162,7 +244,7 @@ const ALL = [
         {d:'Sat 28',t:'swim',tl:'Swim',ty:'1,800 m',de:'600m easy → 4×200m at pace (25s rest) → 400m cool-down.'},
         {d:'Sun 29',t:'bike',tl:'Bike — Long Z2',ty:'90–100 min spin',de:'Longer long ride. Z2 only.'},
       ]},
-      { label:'W3', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h 05m'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,700m'}], days:[
+      { label:'W3', weekStart:'2026-03-30', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h 05m'},{c:'#E24B4A',l:'Run ~55m'},{c:'#1A9E75',l:'Swim ~3,700m'}], days:[
         {d:'Mon 30',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'3 min run / 2 min walk × 4. Load week — stay conservative.'},
         {d:'Tue 1 Apr',t:'bike',tl:'Bike — Z2',ty:'55 min spin',de:'Aerobic base. Keep effort controlled — need legs for Saturday brick.'},
         {d:'Wed 2',t:'swim',tl:'Swim — hard',ty:'2,000 m',de:'400m warm-up → 8×100m hard (15s rest) → 4×100m Z2 → 200m cool-down.'},
@@ -171,7 +253,7 @@ const ALL = [
         {d:'Sat 5',t:'brick',tl:'Brick',ty:'75 min bike + 15 min run',de:'75 min Z2 spin → treadmill → 2 min run / 2 min walk × 3 + 3 min easy.'},
         {d:'Sun 6',t:'run',tl:'Run/walk',ty:'20 min treadmill',de:'2 min run / 2 min walk × 4. Easy Z1 recovery.'},
       ]},
-      { label:'W4 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~1h 50m'},{c:'#E24B4A',l:'Run ~30m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+      { label:'W4 ↩', weekStart:'2026-04-06', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~1h 50m'},{c:'#E24B4A',l:'Run ~30m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon 7',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
         {d:'Tue 8',t:'bike',tl:'Bike — easy',ty:'35 min spin',de:'Short easy Z2.'},
         {d:'Wed 9',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
@@ -185,7 +267,7 @@ const ALL = [
   { num:2, label:'B2 — Base 2', btnCls:'', dates:'Apr 14 – May 10',
     desc:'<strong>Block 2 — Base 2 (Apr 14 – May 10):</strong> Abu Dhabi. Outdoor riding on Eulogia replaces spinning on Saturdays. Zwift for runs. Pool for swims. Run/walk progresses to 3:2. Long bike pushes to 2h. First proper brick.',
     weeks:[
-      { label:'W5', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~3,600m'}], days:[
+      { label:'W5', weekStart:'2026-04-13', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~3,600m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'25 min treadmill',de:'3 min run / 2 min walk × 4. First 3:2 session. Easy Z2.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'50 min Zwift',de:'Pure aerobic. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'1,800 m',de:'400m warm-up → 8×100m Z2 (20s rest) → 600m → 200m cool-down.'},
@@ -194,7 +276,7 @@ const ALL = [
         {d:'Sat',t:'bike',tl:'Bike — Long Z2',ty:'2h outdoor/Zwift',de:'First 2h ride. Z2 only. Outdoors on Eulogia if back in Abu Dhabi.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'40 min treadmill',de:'40 min run/walk. 4 min run / 2 min walk x 6. Building time on feet — easy Z2 throughout.'},
       ]},
-      { label:'W6', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3.5h'},{c:'#E24B4A',l:'Run ~1h 35m'},{c:'#1A9E75',l:'Swim ~3,800m'}], days:[
+      { label:'W6', weekStart:'2026-04-20', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3.5h'},{c:'#E24B4A',l:'Run ~1h 35m'},{c:'#1A9E75',l:'Swim ~3,800m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'3 min run / 2 min walk × 5. Easy Z2.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'55 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m warm-up → 10×100m Z2 (20s rest) → 400m → 200m cool-down.'},
@@ -203,7 +285,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'90 min bike + 20 min run',de:'90 min Z2 outdoor → treadmill → 3 min run / 2 min walk × 4.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'55 min treadmill',de:'55 min run/walk. 4 min run / 2 min walk x 8. Steady build — main run volume session of the week.'},
       ]},
-      { label:'W7', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 35m'},{c:'#1A9E75',l:'Swim ~4,200m'}], days:[
+      { label:'W7', weekStart:'2026-04-27', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 35m'},{c:'#1A9E75',l:'Swim ~4,200m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'3 min run / 2 min walk × 5. Load week — stay conservative.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'60 min Zwift',de:'First full hour ride. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — hard',ty:'2,200 m',de:'400m warm-up → 10×100m hard (15s rest) → 600m Z2 → 200m cool-down.'},
@@ -212,7 +294,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'2h bike + 20 min run',de:'2h Z2 outdoor → treadmill → 3 min run / 2 min walk × 4.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'60 min treadmill',de:'60 min run/walk. 4 min run / 2 min walk x 8. Load week — the duration matters more than the pace.'},
       ]},
-      { label:'W8 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~35m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+      { label:'W8 ↩', weekStart:'2026-05-04', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~35m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'40 min Zwift',de:'Short easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
@@ -226,7 +308,7 @@ const ALL = [
   { num:3, label:'B3 — Build 1', btnCls:'', dates:'May 11 – Jun 7',
     desc:'<strong>Block 3 — Build 1 (May 11 – Jun 7):</strong> First real volume block. Run/walk moves to 4:2. Long bike hits 2.5–3h outdoors. Swim grows to 2,500m. Brick is now a weekly fixture. Weekly volume ~7–8h.',
     weeks:[
-      { label:'W9', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 50m'},{c:'#1A9E75',l:'Swim ~4,000m'}], days:[
+      { label:'W9', weekStart:'2026-05-11', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 50m'},{c:'#1A9E75',l:'Swim ~4,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'30 min treadmill',de:'4 min run / 2 min walk × 4. First 4:2 session. Easy Z2.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'60 min outdoor',de:'Pure aerobic hour. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,200 m',de:'400m warm-up → 10×100m Z2 (20s rest) → 600m → 200m cool-down.'},
@@ -235,7 +317,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'2h bike + 25 min run',de:'2h Z2 outdoor → treadmill → 4 min run / 2 min walk × 4.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'70 min treadmill',de:'70 min run/walk. 5 min run / 2 min walk x 8. Biggest run yet — stay aerobic the whole way.'},
       ]},
-      { label:'W10', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4.5h'},{c:'#E24B4A',l:'Run ~2h'},{c:'#1A9E75',l:'Swim ~4,500m'}], days:[
+      { label:'W10', weekStart:'2026-05-18', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4.5h'},{c:'#E24B4A',l:'Run ~2h'},{c:'#1A9E75',l:'Swim ~4,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'35 min treadmill',de:'4 min run / 2 min walk × 5. Easy Z2.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'65 min outdoor',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×100m hard (15s rest) → 5×100m Z2 → 500m cool-down.'},
@@ -244,7 +326,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 25 min run',de:'2.5h Z2 outdoor → treadmill → 4 min run / 2 min walk × 4.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'80 min treadmill',de:'80 min run/walk. 5 min run / 2 min walk x 9. Note how your legs feel after this one.'},
       ]},
-      { label:'W11', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run ~2h 10m'},{c:'#1A9E75',l:'Swim ~4,800m'}], days:[
+      { label:'W11', weekStart:'2026-05-25', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run ~2h 10m'},{c:'#1A9E75',l:'Swim ~4,800m'}], days:[
         {d:'Mon',t:'run',tl:'Run/walk',ty:'35 min treadmill',de:'4 min run / 2 min walk × 5. Load week — stay controlled.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'70 min outdoor',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — hard',ty:'2,500 m',de:'500m warm-up → 12×100m hard (15s rest, target sub-2.0) → 400m Z2 → 100m cool-down.'},
@@ -253,7 +335,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 30 min run',de:'2.5h Z2 outdoor → treadmill → 4 min run / 2 min walk × 5.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'90 min treadmill',de:'90 min run/walk. First time running 90 minutes. 5 min run / 2 min walk x 10. Milestone — treat it like a mini race.'},
       ]},
-      { label:'W12 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~35m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+      { label:'W12 ↩', weekStart:'2026-06-01', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~35m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week.',cl:'rest'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'40 min Zwift',de:'Easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique focus.'},
@@ -267,7 +349,7 @@ const ALL = [
   { num:4, label:'B4 — Build 2', btnCls:'', dates:'Jun 8 – Jul 5',
     desc:'<strong>Block 4 — Build 2 (Jun 8 – Jul 5):</strong> Run transitions to continuous Z2 — the key milestone of the plan. Long bike reaches 3h+. Swim adds sighting drills. Weekly volume ~8–9h.',
     weeks:[
-      { label:'W13', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run ~2h 10m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
+      { label:'W13', weekStart:'2026-06-08', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5h'},{c:'#E24B4A',l:'Run ~2h 10m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — continuous',ty:'25 min treadmill',de:'First fully continuous run. Easy Z2. Slow if needed. Key milestone of the plan.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'70 min outdoor',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×150m at pace (20s rest) → 500m cool-down. Sight every 10 strokes.'},
@@ -276,7 +358,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'2.5h bike + 30 min run',de:'2.5h Z2 outdoor → treadmill → 25 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'95 min treadmill',de:'95 min continuous Z2. Slow is fast here. Your longest run to date — go 30 sec/km slower than feels natural.'},
       ]},
-      { label:'W14', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5.5h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
+      { label:'W14', weekStart:'2026-06-15', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~5.5h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — continuous',ty:'30 min treadmill',de:'Easy continuous Z2.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'75 min outdoor',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at pace (30s rest) → 500m cool-down. Sight practice.'},
@@ -285,7 +367,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 30 min run',de:'3h Z2 outdoor → treadmill → 25 min continuous Z2 + 5 min walk. First 3h ride.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'105 min treadmill',de:'105 min continuous Z2. 1h 45m of running. Real 70.3 long run territory — stay controlled throughout.'},
       ]},
-      { label:'W15', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run ~2h 45m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+      { label:'W15', weekStart:'2026-06-22', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run ~2h 45m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — continuous',ty:'30 min treadmill',de:'Easy Z2. Load week — keep running conservative.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'80 min outdoor',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — hard',ty:'3,000 m',de:'500m warm-up → 10×200m hard (25s rest) → 500m cool-down. First 3,000m session.'},
@@ -294,7 +376,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 35 min run',de:'3h Z2 outdoor → treadmill → 30 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'100 min treadmill',de:'100 min continuous Z2. Load week — keep effort truly easy. Building the aerobic base that carries you through the race run.'},
       ]},
-      { label:'W16 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2.5h'},{c:'#E24B4A',l:'Run ~40m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+      { label:'W16 ↩', weekStart:'2026-06-29', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2.5h'},{c:'#E24B4A',l:'Run ~40m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week. Continuous running achieved. 3h+ bike done.',cl:'rest'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'45 min Zwift',de:'Easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
@@ -308,7 +390,7 @@ const ALL = [
   { num:5, label:'B5 — Race-Specific 1', btnCls:'peak', dates:'Jul 6 – Aug 2',
     desc:'<strong>Block 5 — Race-Specific 1 (Jul 6 – Aug 2):</strong> Sessions start mimicking race conditions. Long brick 3h+ bike + 45 min run. Swim includes full 1,900m race-distance efforts. July Abu Dhabi heat — outdoor riding before 7am only. Weekly volume ~9–10h.',
     weeks:[
-      { label:'W17', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run ~2h 40m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+      { label:'W17', weekStart:'2026-07-06', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6h'},{c:'#E24B4A',l:'Run ~2h 40m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'35 min treadmill',de:'Easy continuous Z2.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'80 min Zwift',de:'Zwift for midweek — Abu Dhabi July heat. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
@@ -317,7 +399,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'3h bike + 40 min run',de:'3h Z2 outdoor (pre-7am) → treadmill → 35 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'105 min treadmill',de:'105 min Z2. Race-specific block. Your long run is now close to race duration — every minute past 90 is confidence in the bank.'},
       ]},
-      { label:'W18', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 30m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+      { label:'W18', weekStart:'2026-07-13', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 30m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'35 min treadmill',de:'Easy continuous Z2.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'85 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 10×200m at pace (25s rest) → 500m cool-down.'},
@@ -326,7 +408,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 40 min run',de:'3.5h Z2 outdoor (pre-7am) → treadmill → 35 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'115 min treadmill',de:'115 min Z2. 1h 55m of running. Your longest run of the plan so far — go slow, stay aerobic, finish strong.'},
       ]},
-      { label:'W19', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~6,000m'}], days:[
+      { label:'W19', weekStart:'2026-07-20', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~6,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Load week — keep all runs controlled.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — hard',ty:'3,000 m',de:'500m warm-up → 10×200m hard (25s rest) → 500m cool-down.'},
@@ -335,7 +417,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick — peak',ty:'3.5h bike + 45 min run',de:'3.5h Z2 outdoor → treadmill → 40 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — Z2',ty:'75 min treadmill',de:'75 min easy Z2. Recovery run after peak brick — shorter than your long run but still meaningful time on feet.'},
       ]},
-      { label:'W20 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~45m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+      { label:'W20 ↩', weekStart:'2026-07-27', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~45m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week. Race-distance swims and 3.5h+ bricks done.',cl:'rest'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'50 min Zwift',de:'Short easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Easy. Technique only.'},
@@ -349,7 +431,7 @@ const ALL = [
   { num:6, label:'B6 — Peak', btnCls:'peak', dates:'Aug 3 – Sep 14',
     desc:'<strong>Block 6 — Peak (Aug 3 – Sep 14):</strong> 6 weeks. Peak volume ~10–11h/week. Long brick reaches 4h bike + 60 min run. W24 is the full race rehearsal: swim 1.9k → bike 60k → run 10k non-stop. Recovery week at W26 before taper.',
     weeks:[
-      { label:'W21', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 25m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+      { label:'W21', weekStart:'2026-08-03', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 25m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy continuous Z2. Start of peak block.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
@@ -358,7 +440,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 50 min run',de:'3.5h Z2 outdoor (pre-7am) → treadmill → 45 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'115 min treadmill',de:'115 min Z2. Peak block long run — this is what gives you confidence your legs can run 21 km off the bike.'},
       ]},
-      { label:'W22', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 50m'},{c:'#1A9E75',l:'Swim ~6,000m'}], days:[
+      { label:'W22', weekStart:'2026-08-10', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 50m'},{c:'#1A9E75',l:'Swim ~6,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy continuous Z2.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim — race sim',ty:'1,900 m',de:'300m warm-up → 1,900m continuous at race effort → 200m cool-down. Note your time.'},
@@ -367,7 +449,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 55 min run',de:'3.5h Z2 outdoor → treadmill → 50 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'130 min treadmill',de:'130 min Z2. 2h 10m — your peak long run. Go very slow. If you finish feeling you had more left, you nailed it. Race-proof.'},
       ]},
-      { label:'W23', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+      { label:'W23', weekStart:'2026-08-17', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 20m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Peak week approaching — keep everything controlled.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'90 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace (30s rest) → 500m cool-down.'},
@@ -376,7 +458,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick — peak',ty:'4h bike + 60 min run',de:'4h Z2 outdoor → treadmill → 55 min continuous Z2 + 5 min walk. Peak brick of the entire plan.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'110 min treadmill',de:'110 min easy Z2. Pre-rehearsal week — controlled, not heroic. Save the legs for Saturday race sim.'},
       ]},
-      { label:'W24 — Rehearsal', wCls:'rehearsal', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 15m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
+      { label:'W24 — Rehearsal', weekStart:'2026-08-24', wCls:'rehearsal', vol:[{c:'#4A7DD4',l:'Bike ~7h'},{c:'#E24B4A',l:'Run ~2h 15m'},{c:'#1A9E75',l:'Swim ~5,000m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'35 min treadmill',de:'Easy Z2. Light week before the rehearsal.'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'60 min Zwift',de:'Easy Z2. Save the legs for Saturday.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m warm-up → 6×200m at race pace → 400m cool-down. Sharp, not exhausting.'},
@@ -385,7 +467,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'RACE REHEARSAL',ty:'Swim 1.9k → Bike 60k → Run 10k',de:'Full race rehearsal non-stop at race effort. The most important session of the entire plan.'},
         {d:'Sun',t:'rest',tl:'Rest',ty:'Full rest',de:'Complete rest. You\'ve just done the hardest session of the plan.',cl:'rest'},
       ]},
-      { label:'W25', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 35m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
+      { label:'W25', weekStart:'2026-08-31', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~6.5h'},{c:'#E24B4A',l:'Run ~2h 35m'},{c:'#1A9E75',l:'Swim ~5,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'40 min treadmill',de:'Easy Z2. Back to normal after rehearsal.'},
         {d:'Tue',t:'bike',tl:'Bike — Z2',ty:'85 min Zwift',de:'Aerobic base. Z2 throughout.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,500 m',de:'500m warm-up → 5×300m at race pace → 500m cool-down.'},
@@ -394,7 +476,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick',ty:'3.5h bike + 55 min run',de:'3.5h Z2 outdoor → treadmill → 50 min continuous Z2 + 5 min walk.'},
         {d:'Sun',t:'run',tl:'Run — long',ty:'125 min treadmill',de:'125 min Z2. Second peak long run. 2h 05m of running — you now know what race day will ask of your legs.'},
       ]},
-      { label:'W26 ↩', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2.5h'},{c:'#E24B4A',l:'Run ~45m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
+      { label:'W26 ↩', weekStart:'2026-09-07', wCls:'recovery', vol:[{c:'#4A7DD4',l:'Bike ~2.5h'},{c:'#E24B4A',l:'Run ~45m'},{c:'#1A9E75',l:'Swim ~2,000m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Recovery week. Peak block complete. You have done everything the race requires.',cl:'rest'},
         {d:'Tue',t:'bike',tl:'Bike — easy',ty:'50 min Zwift',de:'Short easy Z2.'},
         {d:'Wed',t:'swim',tl:'Swim — easy',ty:'1,000 m',de:'All Z1–Z2. Technique only.'},
@@ -408,7 +490,7 @@ const ALL = [
   { num:7, label:'B7 — Taper + Race', btnCls:'taper', dates:'Sep 15 – Dec race day',
     desc:'<strong>Block 7 — Taper + Race (Sep 15 – Dec):</strong> Volume drops ~40% over 3 weeks, intensity maintained. Final 2 weeks: nothing new, nothing long. Race week is minimal. Trust the 38 weeks of work.',
     weeks:[
-      { label:'W27 — Taper 1', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~3,500m'}], days:[
+      { label:'W27 — Taper 1', weekStart:'2026-09-14', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~4h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~3,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'30 min treadmill',de:'Easy Z2. Volume drops — don\'t panic. Freshness is the goal now.'},
         {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'60 min Zwift',de:'Z2 with 3×5 min Z3 bursts. Keep legs sharp.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'2,000 m',de:'400m warm-up → 6×200m at race pace (30s rest) → 400m cool-down.'},
@@ -417,7 +499,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick — shorter',ty:'2h bike + 30 min run',de:'2h Z2 → treadmill → 25 min Z2 + 5 min walk. Shorter but same feel.'},
         {d:'Sun',t:'run',tl:'Run — Z2',ty:'70 min treadmill',de:'70 min easy Z2. Taper week 1 — volume drops but keep the long run present. Legs need to stay sharp.'},
       ]},
-      { label:'W28 — Taper 2', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~2,500m'}], days:[
+      { label:'W28 — Taper 2', weekStart:'2026-09-21', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~3h'},{c:'#E24B4A',l:'Run ~1h 20m'},{c:'#1A9E75',l:'Swim ~2,500m'}], days:[
         {d:'Mon',t:'run',tl:'Run — Z2',ty:'25 min treadmill',de:'Easy Z2. Legs should start feeling fresh.'},
         {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'50 min Zwift',de:'10 min Z2 → 3×(5 min Z4 + 3 min Z2) → 12 min cool-down.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'1,500 m',de:'300m warm-up → 6×150m at race pace (20s rest) → 300m cool-down.'},
@@ -426,7 +508,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick — short',ty:'90 min bike + 20 min run',de:'90 min Z2 → treadmill → 15 min Z2 + 5 min walk. Race-feel without the fatigue.'},
         {d:'Sun',t:'run',tl:'Run — Z2',ty:'55 min treadmill',de:'55 min easy Z2. Two weeks from race day — last run of meaningful length. Comfortable and confident.'},
       ]},
-      { label:'W29 — Race -2wks', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~40m'},{c:'#1A9E75',l:'Swim ~1,500m'}], days:[
+      { label:'W29 — Race -2wks', weekStart:'2026-09-28', wCls:'', vol:[{c:'#4A7DD4',l:'Bike ~2h'},{c:'#E24B4A',l:'Run ~40m'},{c:'#1A9E75',l:'Swim ~1,500m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Nothing new from this week. No new routes, no new gear, no experiments.',cl:'rest'},
         {d:'Tue',t:'bike',tl:'Bike — sharp',ty:'40 min Zwift',de:'10 min Z2 → 2×(5 min Z4 + 3 min Z2) → 12 min cool-down.'},
         {d:'Wed',t:'swim',tl:'Swim',ty:'1,000 m',de:'200m easy → 3×200m at race pace → 200m cool-down. Feel fast, don\'t work hard.'},
@@ -435,7 +517,7 @@ const ALL = [
         {d:'Sat',t:'brick',tl:'Brick — very short',ty:'60 min bike + 15 min run',de:'60 min easy Z2 → 15 min easy run. Just reminding the body of the transition.'},
         {d:'Sun',t:'rest',tl:'Rest',ty:'Full rest',de:'Rest. Pack your race bag. Check your gear.',cl:'rest'},
       ]},
-      { label:'Race week', wCls:'raceweek', vol:[{c:'#4A7DD4',l:'Bike ~30m'},{c:'#E24B4A',l:'Run ~0m'},{c:'#1A9E75',l:'Swim ~400m'}], days:[
+      { label:'Race week', weekStart:'2026-12-07', wCls:'raceweek', vol:[{c:'#4A7DD4',l:'Bike ~30m'},{c:'#E24B4A',l:'Run ~0m'},{c:'#1A9E75',l:'Swim ~400m'}], days:[
         {d:'Mon',t:'rest',tl:'Rest',ty:'Full rest',de:'Race week. Rest, eat well, sleep. Nothing you do now will make you fitter.',cl:'rest'},
         {d:'Tue',t:'swim',tl:'Swim — activation',ty:'400 m easy',de:'Easy 400m. Feel your stroke. No effort whatsoever.'},
         {d:'Wed',t:'rest',tl:'Rest',ty:'Full rest',de:'Rest.',cl:'rest'},
@@ -448,11 +530,11 @@ const ALL = [
   },
 ];
 
-let curBlock = 0, curWeek = 0;
+let curBlock = 1, curWeek = 0;
 
 function renderBlockNav() {
   document.getElementById('block-nav').innerHTML = ALL.map((b,i) =>
-    `<button class="blk-btn ${b.btnCls||''} ${i===0?'active':''}" onclick="selectBlock(${i},this)">${b.label}</button>`
+    `<button class="blk-btn ${b.btnCls||''} ${i===1?'active':''}" onclick="selectBlock(${i},this)">${b.label}</button>`
   ).join('');
 }
 
@@ -460,7 +542,7 @@ function selectBlock(i, btn) {
   document.querySelectorAll('.blk-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   curBlock = i; curWeek = 0;
-  renderWeekNav(); renderWeek();
+  renderWeekNav(); renderWeek(); renderVerdict();
 }
 
 function selectWeek(i, btn) {
@@ -477,50 +559,519 @@ function renderWeekNav() {
   ).join('');
 }
 
+// ── Day offset map ──────────────────────────────────────────────────────────
+const DAY_OFF = {Mon:0,Tue:1,Wed:2,Thu:3,Fri:4,Sat:5,Sun:6};
+
+function localDateStr(d) {
+  // Returns YYYY-MM-DD in local time (not UTC)
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+
+function getActualsForWeek(weekStart) {
+  if (!weekStart || !ACTS.length) return {};
+  const base = new Date(weekStart+'T00:00:00'); // parse as local midnight
+  const byDate = {};
+  ACTS.forEach(a => { if(!byDate[a.date]) byDate[a.date]=[]; byDate[a.date].push(a); });
+  const result = {};
+  for (let i=0; i<7; i++) {
+    const d = new Date(base); d.setDate(base.getDate()+i);
+    const iso = localDateStr(d);
+    if (byDate[iso]) result[i] = byDate[iso];
+  }
+  return result;
+}
+
+function dayOffset(dayStr) {
+  const name = dayStr.slice(0,3);
+  return DAY_OFF[name] ?? -1;
+}
+
+function fmtActual(acts) {
+  // Merge multiple activities on same day
+  const a = acts[0];
+  const isBk = ['Ride','Virtual Ride'].includes(a.type);
+  const isRn = ['Run','Virtual Run'].includes(a.type);
+  const isSw = a.type === 'Swim';
+
+  const parts = [];
+  const totalDist = acts.reduce((s,x)=>s+(x.dist||0),0);
+  const totalMin  = acts.reduce((s,x)=>s+(x.min||0),0);
+  const avgHR     = acts.filter(x=>x.hr).length ? Math.round(acts.reduce((s,x)=>s+(x.hr||0),0)/acts.filter(x=>x.hr).length) : null;
+  const avgW      = acts.filter(x=>x.watts).length ? Math.round(acts.reduce((s,x)=>s+(x.watts||0),0)/acts.filter(x=>x.watts).length) : null;
+  const totEffort = Math.round(acts.reduce((s,x)=>s+(x.effort||0),0));
+
+  if (totalDist > 0) parts.push(totalDist.toFixed(1)+' km');
+  parts.push(Math.round(totalMin)+' min');
+
+  if (isBk && avgW)  parts.push(avgW+'W avg');
+  if (avgHR)         parts.push(avgHR+' bpm');
+
+  if (isRn && totalDist > 0 && totalMin > 0) {
+    const pace = (totalMin/totalDist).toFixed(1);
+    parts.push(pace+' min/km');
+  }
+  if (isSw && totalDist > 0 && totalMin > 0) {
+    const pace = (totalMin/totalDist/10).toFixed(1);
+    parts.push(pace+' min/100m');
+  }
+  if (totEffort > 0) parts.push('effort '+totEffort);
+
+  const typeLabel = acts.map(x=>x.type).join(' + ');
+  return { typeLabel, metrics: parts.join(' · ') };
+}
+
 function renderWeek() {
   const w = ALL[curBlock].weeks[curWeek];
   document.getElementById('vol-row').innerHTML = w.vol.map(v =>
     `<div class="vol-pill"><span class="vol-dot" style="background:${v.c}"></span>${v.l}</div>`
   ).join('');
-  document.getElementById('week-display').innerHTML = `<div class="days-grid">${w.days.map(d =>
-    `<div class="day-card${d.cl?' '+d.cl:''}">
-      <div class="day-name">${d.d}</div>
+
+  const actuals = IS_LIVE ? getActualsForWeek(w.weekStart) : {};
+  const today = localDateStr(new Date());
+
+  document.getElementById('week-display').innerHTML = `<div class="days-grid">${w.days.map(d => {
+    const off = dayOffset(d.d);
+    const acts = (off >= 0 && actuals[off]) ? actuals[off] : null;
+    const iso  = w.weekStart ? (() => { const b=new Date(w.weekStart+'T00:00:00'); b.setDate(b.getDate()+off); return localDateStr(b); })() : null;
+    const isToday = iso === today;
+    const isPast  = iso && iso < today;
+
+    if (acts) {
+      // Split card — plan left, actual right
+      const fmt = fmtActual(acts);
+      const cardCls = isToday ? 'day-card today' : 'day-card done';
+      return `<div class="${cardCls}" style="min-height:148px;padding:8px;">
+        <div class="day-name" style="margin-bottom:5px;">${d.d}${isToday?' <span style=\'color:#1a6fc4\'>TODAY</span>':''}</div>
+        <div style="display:grid;grid-template-columns:55% 45%;gap:6px;height:calc(100% - 22px);">
+          <div style="border-right:1px solid rgba(255,255,255,0.06);padding-right:6px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:.1em;color:#3d5270;margin-bottom:3px;">PLAN</div>
+            <span class="tag ${T[d.t]}" style="margin-bottom:3px;">${d.tl}</span>
+            <div style="font-size:10px;font-weight:500;color:#6b82a0;line-height:1.35;">${d.ty}</div>
+          </div>
+          <div style="padding-left:2px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:.1em;color:#0e7c65;margin-bottom:3px;">ACTUAL</div>
+            <div style="font-size:9px;font-weight:600;color:#3db89a;margin-bottom:3px;">${fmt.typeLabel}</div>
+            <div style="font-size:9px;color:#6b82a0;line-height:1.55;">${fmt.metrics.split(' · ').join('<br>')}</div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // Normal card — check compliance (skip for PAST block)
+    const isPastBlock = ALL[curBlock].num === 0;
+    const isMissed = isPast && d.t !== 'rest' && IS_LIVE && !acts && !isPastBlock;
+    // Check type mismatch
+    const isWrong = isPast && d.t !== 'rest' && IS_LIVE && acts && !isPastBlock && (() => {
+      const planType = d.t;
+      return !acts.some(a => {
+        if (planType === 'bike')  return ['Ride','Virtual Ride'].includes(a.type);
+        if (planType === 'run')   return ['Run','Virtual Run'].includes(a.type);
+        if (planType === 'swim')  return a.type === 'Swim';
+        if (planType === 'brick') return ['Ride','Virtual Ride'].includes(a.type);
+        return true;
+      });
+    })();
+
+    let extraStyle = '';
+    let missedBadge = '';
+    if (isMissed) {
+      extraStyle = 'border:1px solid #c0392b;border-left:2px solid #c0392b;';
+      missedBadge = '<span style="float:right;color:#c0392b;font-size:12px;font-weight:700;line-height:1;">✕</span>';
+    } else if (isWrong) {
+      extraStyle = 'border:1px solid rgba(192,57,43,0.5);border-left:2px solid rgba(192,57,43,0.5);';
+      missedBadge = '<span style="float:right;color:rgba(192,57,43,0.7);font-size:10px;font-weight:700;line-height:1;">≠</span>';
+    }
+
+    const extraCls = d.cl ? ' '+d.cl : (isPast && d.t!=='rest' ? ' past' : '');
+    const cardCls2 = 'day-card' + extraCls + (isToday ? ' today' : '');
+    return `<div class="${cardCls2}" style="${extraStyle}">
+      <div class="day-name">${missedBadge}${d.d}${isToday?' <span style=\"color:#1a6fc4\">TODAY</span>':''}</div>
       <span class="tag ${T[d.t]}">${d.tl}</span>
       <div class="day-type">${d.ty}</div>
       <div class="day-detail">${d.de}</div>
-    </div>`
-  ).join('')}</div>`;
+    </div>`;
+  }).join('')}</div>`;
 }
 
-renderBlockNav(); renderWeekNav(); renderWeek();
+// ── PAGE LOAD (see bottom of script) ─────────────────────────────────────────
+
+// ── EXPECTED CTL CURVE ───────────────────────────────────────────────────────
+// Maps week number (1-30) to expected CTL at end of that week
+const EXPECTED_CTL = {
+  1:4, 2:7, 3:10, 4:8,
+  5:12, 6:16, 7:20, 8:15,
+  9:22, 10:27, 11:32, 12:24,
+  13:32, 14:38, 15:44, 16:34,
+  17:42, 18:49, 19:56, 20:44,
+  21:54, 22:62, 23:68, 24:65,
+  25:70, 26:58,
+  27:52, 28:44, 29:36, 30:20
+};
+
+// ── COMPLIANCE ANALYSIS ──────────────────────────────────────────────────────
+function getComplianceData() {
+  if (!IS_LIVE) return null;
+  const today = localDateStr(new Date());
+  const actDates = new Set(ACTS.map(a => a.date));
+  const actByDate = {};
+  ACTS.forEach(a => { if(!actByDate[a.date]) actByDate[a.date]=[]; actByDate[a.date].push(a); });
+
+  let planned=0, completed=0, missed=0, wrong=0;
+  // Look at all past planned days across all blocks (skip PAST block)
+  ALL.forEach(block => {
+    if (block.num === 0) return; // PAST block — assumed compliant
+    block.weeks.forEach(week => {
+      if (!week.weekStart) return;
+      week.days.forEach((day, i) => {
+        const base = new Date(week.weekStart);
+        base.setDate(base.getDate() + i);
+        const iso = base.toISOString().slice(0,10);
+        if (iso >= today) return; // skip future
+        if (day.t === 'rest') return; // skip rest days
+        planned++;
+        const acts = actByDate[iso];
+        if (!acts || acts.length === 0) {
+          missed++;
+        } else {
+          // Check type match
+          const planType = day.t;
+          const hasMatch = acts.some(a => {
+            if (planType === 'bike') return ['Ride','Virtual Ride'].includes(a.type);
+            if (planType === 'run')  return ['Run','Virtual Run'].includes(a.type);
+            if (planType === 'swim') return a.type === 'Swim';
+            if (planType === 'brick') return ['Ride','Virtual Ride'].includes(a.type);
+            return true;
+          });
+          if (hasMatch) completed++; else { completed++; wrong++; }
+        }
+      });
+    });
+  });
+
+  const rate = planned > 0 ? Math.round((completed/planned)*100) : 100;
+  return { planned, completed, missed, wrong, rate };
+}
+
+function getRecentCompliance(days=14) {
+  if (!IS_LIVE) return null;
+  const today = new Date();
+  const cutoff = new Date(today); cutoff.setDate(today.getDate()-days);
+  const cutoffStr = cutoff.toISOString().slice(0,10);
+  const todayStr = today.toISOString().slice(0,10);
+  const actByDate = {};
+  ACTS.forEach(a => { if(!actByDate[a.date]) actByDate[a.date]=[]; actByDate[a.date].push(a); });
+
+  let planned=0, completed=0;
+  ALL.forEach(block => {
+    block.weeks.forEach(week => {
+      if (!week.weekStart) return;
+      week.days.forEach((day, i) => {
+        const base = new Date(week.weekStart);
+        base.setDate(base.getDate()+i);
+        const iso = base.toISOString().slice(0,10);
+        if (iso < cutoffStr || iso >= todayStr) return;
+        if (day.t === 'rest') return;
+        planned++;
+        if (actByDate[iso] && actByDate[iso].length > 0) completed++;
+      });
+    });
+  });
+  return planned > 0 ? Math.round((completed/planned)*100) : 100;
+}
+
+function getCurrentWeekNum() {
+  const today = localDateStr(new Date());
+  const planStart = '2026-03-16';
+  if (today < planStart) return 1; // before plan start
+  let weekNum = 1;
+  for (let b=0; b<ALL.length; b++) {
+    if (ALL[b].num === 0) continue; // skip PAST block
+    for (let w=0; w<ALL[b].weeks.length; w++) {
+      const ws = ALL[b].weeks[w];
+      if (!ws.weekStart) { weekNum++; continue; }
+      const end = new Date(ws.weekStart); end.setDate(end.getDate()+7);
+      if (today >= ws.weekStart && today < end.toISOString().slice(0,10)) return weekNum;
+      weekNum++;
+    }
+  }
+  return weekNum;
+}
+
+// ── ADAPTIVE VOLUME MULTIPLIER ───────────────────────────────────────────────
+function getAdaptMultiplier() {
+  if (!IS_LIVE || !WELLNESS || WELLNESS.length === 0) return 1.0;
+  const weekNum = getCurrentWeekNum();
+  const expectedCtl = EXPECTED_CTL[weekNum] || 30;
+  const fd = getFitnessData();
+  const currentCtl = fd.ctl[fd.ctl.length-1] || 0;
+  const recentRate = getRecentCompliance(14) || 100;
+
+  // CTL delta vs expected
+  const ctlRatio = expectedCtl > 0 ? currentCtl / expectedCtl : 1;
+
+  // Composite: weight CTL 60%, compliance 40%
+  const compRate = recentRate / 100;
+  const composite = (ctlRatio * 0.6) + (compRate * 0.4);
+
+  // Map to multiplier: <0.7 = reduce 20%, 0.7-0.9 = reduce 10%, 0.9-1.1 = no change, >1.1 = increase 10%
+  if (composite < 0.7)  return 0.8;
+  if (composite < 0.9)  return 0.9;
+  if (composite < 1.15) return 1.0;
+  return 1.1;
+}
+
+// ── ADAPTIVE SESSION DURATION ─────────────────────────────────────────────────
+function adaptDuration(ty, multiplier) {
+  if (multiplier === 1.0) return ty;
+  const m = ty.match(/^(\d+)\s*min/);
+  if (!m) return ty;
+  const orig = parseInt(m[1]);
+  const adapted = Math.round(orig * multiplier / 5) * 5; // round to nearest 5
+  if (adapted === orig) return ty;
+  return ty.replace(/^\d+\s*min/, adapted+' min') + ' [adapted]';
+}
+
+// ── VERDICT BAR ───────────────────────────────────────────────────────────────
+function renderVerdict() {
+  const el = document.getElementById('verdict-text');
+  const bar = document.getElementById('verdict-bar');
+  if (!el || !bar) return;
+
+  const weekNum = getCurrentWeekNum();
+  if (!IS_LIVE) {
+    // Generic message based on week number
+    const weeksLeft = Math.round((new Date('2026-12-06') - new Date()) / (86400000*7));
+    let genericMsg, genericColor;
+    if (weekNum <= 4) {
+      genericColor = '#3db89a';
+      genericMsg = `Week ${weekNum} — building the base. This is the foundation everything else sits on. Swim, bike, run/walk: do each session and do not skip the easy ones.`;
+    } else if (weekNum <= 12) {
+      genericColor = '#3db89a';
+      genericMsg = `Week ${weekNum} — aerobic build phase. Volume is climbing. The work you do now determines how the race feels in December. ${weeksLeft} weeks to go.`;
+    } else if (weekNum <= 20) {
+      genericColor = '#1a6fc4';
+      genericMsg = `Week ${weekNum} — build phase. Running should now be continuous and long rides are getting serious. This is where 70.3 fitness is made.`;
+    } else if (weekNum <= 26) {
+      genericColor = '#ba7517';
+      genericMsg = `Week ${weekNum} — peak training. Hard weeks. The race rehearsal is coming. Trust the plan, prioritise sleep, do not add extra sessions.`;
+    } else {
+      genericColor = '#3db89a';
+      genericMsg = `Week ${weekNum} — taper. Volume drops, sharpness stays. Resist the urge to train more. ${weeksLeft} weeks to race day — the work is done.`;
+    }
+    bar.style.borderLeftColor = genericColor;
+    el.style.color = '#dde4f0';
+    el.innerHTML = genericMsg;
+    return;
+  }
+
+  const fd = getFitnessData();
+  const curCtl = fd.ctl[fd.ctl.length-1] || 0;
+  const curTsb = fd.tsb[fd.tsb.length-1] || 0;
+  const expectedCtl = EXPECTED_CTL[weekNum] || 30;
+  const ctlDelta = +(curCtl - expectedCtl).toFixed(1);
+  const compliance = getComplianceData();
+  const recentRate = getRecentCompliance(14);
+  const overallRate = compliance ? compliance.rate : 100;
+  const missed = compliance ? compliance.missed : 0;
+
+  const raceDate = new Date('2026-12-06');
+  const weeksLeft = Math.round((raceDate - new Date()) / (86400000*7));
+
+  let color, sentence;
+
+  if (overallRate >= 90 && ctlDelta >= -3) {
+    color = '#3db89a';
+    sentence = `You are executing the plan well — ${overallRate}% compliance and fitness right where it needs to be with ${weeksLeft} weeks to race day. Keep it up.`;
+  } else if (overallRate >= 80 && ctlDelta >= -6) {
+    color = '#3db89a';
+    sentence = `Solid execution overall — ${overallRate}% of sessions done and fitness tracking close to target. A few missed sessions but nothing that changes the picture. Stay consistent.`;
+  } else if (recentRate < 60 && ctlDelta < -5) {
+    color = '#c0392b';
+    sentence = `You are behind — ${missed} sessions missed recently, fitness ${Math.abs(ctlDelta).toFixed(0)} points below where it should be at week ${weekNum}. The plan has been adjusted down. You need to string together consistent weeks now or the December race will be a suffer-fest.`;
+  } else if (recentRate < 70) {
+    color = '#ba7517';
+    sentence = `Inconsistent over the last two weeks — only ${recentRate}% of sessions completed. Fitness is still ok but this cannot continue. Miss a few more weeks like this and the plan unravels.`;
+  } else if (ctlDelta < -8) {
+    color = '#c0392b';
+    sentence = `Fitness is ${Math.abs(ctlDelta).toFixed(0)} points below expected for week ${weekNum}. You are behind the curve. The plan has been pulled back — focus on quality over quantity and do not skip any more sessions.`;
+  } else if (ctlDelta > 8) {
+    color = '#1a6fc4';
+    sentence = `You are ahead of schedule — fitness ${ctlDelta.toFixed(0)} points above target for this point in the plan. The plan has been nudged up slightly. Make sure fatigue (TSB: ${curTsb}) does not get too negative.`;
+  } else if (curTsb < -15) {
+    color = '#ba7517';
+    sentence = `Compliance is good but you are carrying significant fatigue right now (form: ${curTsb}). Do not add extra sessions — let the plan do its job and prioritise sleep and nutrition this week.`;
+  } else {
+    color = '#ba7517';
+    sentence = `On track overall but the last two weeks have been patchy (${recentRate}% compliance). Fitness is close to target. Tighten up the consistency — at ${weeksLeft} weeks out, every session counts.`;
+  }
+
+  bar.style.borderLeftColor = color;
+  el.style.color = '#dde4f0';
+  el.innerHTML = sentence;
+}
+
+// ── STATUS INDICATOR ──────────────────────────────────────────────────────────
+function renderStatus() {
+  const el = document.getElementById('status-indicator');
+  if (!el) return;
+
+  if (!IS_LIVE) {
+    el.style.display = 'none';
+    return;
+  }
+
+  const fd = getFitnessData();
+  const curCtl = fd.ctl[fd.ctl.length-1] || 0;
+  const curTsb = fd.tsb[fd.tsb.length-1] || 0;
+  const weekNum = getCurrentWeekNum();
+  const expectedCtl = EXPECTED_CTL[weekNum] || 30;
+  const ctlDelta = +(curCtl - expectedCtl).toFixed(1);
+  const compliance = getComplianceData();
+  const recentRate = getRecentCompliance(14);
+  const multiplier = getAdaptMultiplier();
+
+  // Days to race (approx Dec 6 2026)
+  const raceDate = new Date('2026-12-06');
+  const daysToRace = Math.round((raceDate - new Date()) / 86400000);
+  const weeksToRace = Math.round(daysToRace/7);
+
+  // Status level
+  let statusColor, statusLabel, statusMsg, statusIcon;
+  const overallRate = compliance ? compliance.rate : 100;
+  const ctlOk = ctlDelta >= -5;
+  const compOk = overallRate >= 75;
+  const recentOk = recentRate >= 70;
+
+  if (ctlOk && compOk && recentOk) {
+    statusColor = '#0e7c65'; statusLabel = 'ON TRACK';
+    statusIcon = '●';
+    statusMsg = `Fitness is where it should be (CTL ${curCtl} vs expected ${expectedCtl}). Keep executing the plan.`;
+  } else if (!recentOk && ctlOk) {
+    statusColor = '#9a7c0a'; statusLabel = 'PATCHY RECENTLY';
+    statusIcon = '◐';
+    statusMsg = `Last 2 weeks compliance at ${recentRate}% — fitness still ok but consistency needs to improve. Don't let it slide further.`;
+  } else if (ctlDelta < -8) {
+    statusColor = '#c0392b'; statusLabel = 'BEHIND PLAN';
+    statusIcon = '✕';
+    statusMsg = `CTL is ${Math.abs(ctlDelta)} points below expected. Future weeks have been reduced 10–20% to allow catch-up without injury.`;
+  } else if (ctlDelta > 8) {
+    statusColor = '#1a6fc4'; statusLabel = 'AHEAD OF PLAN';
+    statusIcon = '▲';
+    statusMsg = `CTL ${ctlDelta} points above expected — you're building faster than planned. Future weeks nudged up 10%.`;
+  } else {
+    statusColor = '#9a7c0a'; statusLabel = 'SLIGHT GAP';
+    statusIcon = '◐';
+    statusMsg = `CTL slightly below expected (${curCtl} vs ${expectedCtl}). ${compliance ? compliance.missed+' sessions missed' : ''}. Plan adjusted slightly — focus on consistency.`;
+  }
+
+  const adaptNote = multiplier !== 1.0
+    ? `<span style="font-size:10px;color:${multiplier<1?'#e07070':'#5a9ee0'};margin-left:10px;">${multiplier<1?'↓ Volume reduced':'↑ Volume increased'} ${Math.round(Math.abs(1-multiplier)*100)}% based on current fitness</span>`
+    : '';
+
+  el.style.display = 'block';
+  el.innerHTML = `
+  <div style="background:#0f1623;border:1px solid rgba(255,255,255,0.07);border-left:3px solid ${statusColor};padding:12px 16px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;min-width:120px;">
+      <span style="font-size:16px;color:${statusColor};">${statusIcon}</span>
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;color:${statusColor};">${statusLabel}</div>
+        <div style="font-size:10px;color:#3d5270;margin-top:1px;">Week ${weekNum} of 30</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <div style="font-size:11px;color:#dde4f0;line-height:1.6;">${statusMsg}${adaptNote}</div>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+      <div style="text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#dde4f0;">${overallRate}%</div>
+        <div style="font-size:9px;color:#3d5270;letter-spacing:.06em;text-transform:uppercase;">Compliance</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#dde4f0;">${curCtl}</div>
+        <div style="font-size:9px;color:#3d5270;letter-spacing:.06em;text-transform:uppercase;">CTL</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:${curTsb>=0?'#3db89a':'#e07070'};">${curTsb>0?'+':''}${curTsb}</div>
+        <div style="font-size:9px;color:#3d5270;letter-spacing:.06em;text-transform:uppercase;">Form</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#dde4f0;">${weeksToRace}</div>
+        <div style="font-size:9px;color:#3d5270;letter-spacing:.06em;text-transform:uppercase;">Wks to race</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Re-render current week with adaptive multiplier applied
+  renderWeekAdaptive(getAdaptMultiplier());
+
+  // Update verdict bar
+  renderVerdict();
+}
+
+// ── ADAPTIVE RENDERWEEK ───────────────────────────────────────────────────────
+function renderWeekAdaptive(multiplier) {
+  // Only adapt future weeks
+  const today = localDateStr(new Date());
+  const w = ALL[curBlock].weeks[curWeek];
+  if (!w.weekStart) return;
+  const weekEnd = new Date(w.weekStart); weekEnd.setDate(weekEnd.getDate()+7);
+  const isFuture = w.weekStart > today;
+  if (!isFuture || multiplier === 1.0) return;
+
+  // Re-render with adapted durations
+  const actuals = IS_LIVE ? getActualsForWeek(w.weekStart) : {};
+  document.getElementById('week-display').innerHTML = `<div class="days-grid">${w.days.map((d, i) => {
+    const acts = actuals[i] || null;
+    const base = new Date(w.weekStart); base.setDate(base.getDate()+i);
+    const iso = base.toISOString().slice(0,10);
+    const isToday = iso === today;
+
+    if (acts) {
+      const fmt = fmtActual(acts);
+      return `<div class="day-card done" style="min-height:148px;padding:8px;">
+        <div class="day-name">${d.d}</div>
+        <div style="display:grid;grid-template-columns:55% 45%;gap:6px;height:calc(100% - 22px);">
+          <div style="border-right:1px solid rgba(255,255,255,0.06);padding-right:6px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:.1em;color:#3d5270;margin-bottom:3px;">PLAN</div>
+            <span class="tag ${T[d.t]}" style="margin-bottom:3px;">${d.tl}</span>
+            <div style="font-size:10px;font-weight:500;color:#6b82a0;line-height:1.35;">${d.ty}</div>
+          </div>
+          <div style="padding-left:2px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:.1em;color:#0e7c65;margin-bottom:3px;">ACTUAL</div>
+            <div style="font-size:9px;font-weight:600;color:#3db89a;margin-bottom:3px;">${fmt.typeLabel}</div>
+            <div style="font-size:9px;color:#6b82a0;line-height:1.55;">${fmt.metrics.split(' · ').join('<br>')}</div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    const adaptedTy = d.t !== 'rest' ? adaptDuration(d.ty, multiplier) : d.ty;
+    const isAdapted = adaptedTy !== d.ty;
+    const extraCls = d.cl ? ' '+d.cl : '';
+    return `<div class="day-card${extraCls}${isToday?' today':''}">
+      <div class="day-name">${d.d}</div>
+      <span class="tag ${T[d.t]}">${d.tl}</span>
+      <div class="day-type">${adaptedTy}${isAdapted?'<span style="color:#5a9ee0;font-size:8px;margin-left:3px;">↕</span>':''}</div>
+      <div class="day-detail">${d.de}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── PAGE LOAD ─────────────────────────────────────────────────────────────────
+renderBlockNav();
+renderWeekNav();
+renderWeek();
+renderVerdict();
 </script>
 
 <!-- ===================== ATHLETE DASHBOARD ===================== -->
 <div style="margin-top:2.5rem; border-top: 1px solid rgba(255,255,255,0.07); padding-top:2rem;">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;flex-wrap:wrap;gap:12px;">
-    <div>
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#dde4f0;margin-bottom:3px;">Athlete Dashboard</div>
-      <div id="dash-status" style="font-size:11px;color:#6b82a0;letter-spacing:0.05em;text-transform:uppercase;">Not connected</div>
-    </div>
-    <button onclick="toggleSettings()" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;border:1px solid rgba(255,255,255,0.13);background:transparent;color:#6b82a0;cursor:pointer;" id="settings-btn">Connect intervals.icu</button>
-  </div>
-
-  <!-- Credentials panel -->
-  <div id="settings-panel" style="display:none;background:#0f1623;border:1px solid rgba(255,255,255,0.07);padding:16px;margin-bottom:1.5rem;">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#3d5270;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.07);">intervals.icu connection</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
-      <div>
-        <div style="font-size:10px;color:#3d5270;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.08em;">Athlete ID</div>
-        <input id="inp-athlete" type="text" placeholder="e.g. i12345" style="width:100%;background:#151e2e;border:1px solid rgba(255,255,255,0.1);color:#dde4f0;padding:7px 10px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;">
-      </div>
-      <div>
-        <div style="font-size:10px;color:#3d5270;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.08em;">API Key</div>
-        <input id="inp-apikey" type="password" placeholder="from Settings → Developer" style="width:100%;background:#151e2e;border:1px solid rgba(255,255,255,0.1);color:#dde4f0;padding:7px 10px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;">
-      </div>
-      <button onclick="connectAndFetch()" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:8px 16px;border:1px solid #1a6fc4;background:#0d3f6e;color:#5a9ee0;cursor:pointer;">Fetch data</button>
-    </div>
-    <div style="font-size:10px;color:#3d5270;margin-top:8px;">Find your Athlete ID in your intervals.icu profile URL. API key: Settings → Developer Settings → Generate API Key. Credentials saved locally in your browser.</div>
-    <div id="fetch-error" style="display:none;font-size:11px;color:#e07070;margin-top:8px;padding:6px 10px;background:rgba(192,57,43,0.1);border-left:2px solid #c0392b;"></div>
+  <div style="margin-bottom:1.25rem;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#dde4f0;margin-bottom:3px;">Athlete Dashboard</div>
+    <div id="dash-status" style="font-size:11px;color:#6b82a0;letter-spacing:0.05em;text-transform:uppercase;">Live data not yet loaded</div>
   </div>
 
   <div style="display:flex;gap:0;margin-bottom:1.5rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,0.07);" id="dash-nav">
@@ -539,24 +1090,32 @@ renderBlockNav(); renderWeekNav(); renderWeek();
 
 // ── INTERVALS.ICU CONNECTION ──────────────────────────────────────────────────
 
-let ACTS = [{"date":"2025-11-16","type":"Ride","dist":12.52,"min":54.1,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":13.9,"cal":276.0},{"date":"2025-11-23","type":"Ride","dist":20.16,"min":71.3,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":17.0,"cal":null},{"date":"2025-11-29","type":"Ride","dist":28.19,"min":93.1,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":18.2,"cal":null},{"date":"2025-12-13","type":"Ride","dist":9.13,"min":29.4,"watts":69.0,"hr":132.0,"maxhr":160.0,"effort":19.0,"spd":18.6,"cal":388.0},{"date":"2025-12-14","type":"Ride","dist":38.39,"min":138.6,"watts":51.0,"hr":135.0,"maxhr":155.0,"effort":131.0,"spd":16.6,"cal":476.0},{"date":"2025-12-15","type":"Swim","dist":0.5,"min":11.5,"watts":null,"hr":127.0,"maxhr":157.0,"effort":18.0,"spd":2.6,"cal":170.0},{"date":"2025-12-20","type":"Ride","dist":22.09,"min":81.2,"watts":75.0,"hr":138.0,"maxhr":175.0,"effort":87.0,"spd":16.3,"cal":1210.0},{"date":"2025-12-22","type":"Ride","dist":44.26,"min":154.7,"watts":73.0,"hr":144.0,"maxhr":168.0,"effort":218.0,"spd":17.2,"cal":2465.0},{"date":"2025-12-27","type":"Ride","dist":14.23,"min":44.0,"watts":74.0,"hr":140.0,"maxhr":160.0,"effort":50.0,"spd":19.4,"cal":676.0},{"date":"2025-12-28","type":"Ride","dist":22.25,"min":74.5,"watts":75.0,"hr":135.0,"maxhr":152.0,"effort":71.0,"spd":17.9,"cal":1073.0},{"date":"2026-01-10","type":"Virtual Ride","dist":24.64,"min":84.6,"watts":91.0,"hr":144.0,"maxhr":162.0,"effort":118.0,"spd":17.5,"cal":440.0},{"date":"2026-01-11","type":"Virtual Ride","dist":22.12,"min":58.8,"watts":95.0,"hr":131.0,"maxhr":155.0,"effort":38.0,"spd":22.6,"cal":318.0},{"date":"2026-01-13","type":"Virtual Ride","dist":10.91,"min":30.0,"watts":97.0,"hr":128.0,"maxhr":162.0,"effort":16.0,"spd":21.8,"cal":166.0},{"date":"2026-01-14","type":"Virtual Ride","dist":19.79,"min":65.5,"watts":109.0,"hr":151.0,"maxhr":176.0,"effort":123.0,"spd":18.1,"cal":409.0},{"date":"2026-01-16","type":"Virtual Ride","dist":11.49,"min":34.1,"watts":93.0,"hr":146.0,"maxhr":165.0,"effort":51.0,"spd":20.2,"cal":182.0},{"date":"2026-01-17","type":"Virtual Ride","dist":23.89,"min":65.6,"watts":121.0,"hr":152.0,"maxhr":171.0,"effort":129.0,"spd":21.8,"cal":455.0},{"date":"2026-01-18","type":"Swim","dist":0.45,"min":10.2,"watts":null,"hr":130.0,"maxhr":169.0,"effort":29.0,"spd":2.6,"cal":166.0},{"date":"2026-01-19","type":"Virtual Ride","dist":18.55,"min":50.2,"watts":84.0,"hr":123.0,"maxhr":135.0,"effort":17.0,"spd":22.2,"cal":241.0},{"date":"2026-01-22","type":"Swim","dist":0.5,"min":10.9,"watts":null,"hr":107.0,"maxhr":138.0,"effort":8.0,"spd":2.8,"cal":173.0},{"date":"2026-01-23","type":"Virtual Ride","dist":12.75,"min":36.7,"watts":83.0,"hr":124.0,"maxhr":135.0,"effort":13.0,"spd":20.8,"cal":174.0},{"date":"2026-01-24","type":"Virtual Ride","dist":24.31,"min":64.2,"watts":112.0,"hr":139.0,"maxhr":166.0,"effort":67.0,"spd":22.7,"cal":412.0},{"date":"2026-01-25","type":"Virtual Ride","dist":25.03,"min":81.1,"watts":72.0,"hr":135.0,"maxhr":155.0,"effort":67.0,"spd":18.5,"cal":333.0},{"date":"2026-01-26","type":"Virtual Ride","dist":19.9,"min":59.5,"watts":70.0,"hr":144.0,"maxhr":155.0,"effort":86.0,"spd":20.1,"cal":240.0},{"date":"2026-01-30","type":"Virtual Ride","dist":14.17,"min":56.0,"watts":76.0,"hr":118.0,"maxhr":136.0,"effort":14.0,"spd":15.2,"cal":244.0},{"date":"2026-01-31","type":"Virtual Ride","dist":18.82,"min":54.3,"watts":79.0,"hr":122.0,"maxhr":143.0,"effort":18.0,"spd":20.8,"cal":246.0},{"date":"2026-01-31","type":"Virtual Ride","dist":19.52,"min":68.8,"watts":86.0,"hr":133.0,"maxhr":150.0,"effort":49.0,"spd":17.0,"cal":337.0},{"date":"2026-02-14","type":"Virtual Ride","dist":15.85,"min":40.9,"watts":107.0,"hr":134.0,"maxhr":160.0,"effort":37.0,"spd":23.2,"cal":249.0},{"date":"2026-02-14","type":"Swim","dist":1.3,"min":26.2,"watts":null,"hr":118.0,"maxhr":158.0,"effort":29.0,"spd":3.0,"cal":417.0},{"date":"2026-02-15","type":"Virtual Ride","dist":17.17,"min":46.1,"watts":141.0,"hr":150.0,"maxhr":168.0,"effort":82.0,"spd":22.3,"cal":373.0},{"date":"2026-02-18","type":"Virtual Ride","dist":21.82,"min":60.5,"watts":88.0,"hr":123.0,"maxhr":160.0,"effort":20.0,"spd":21.6,"cal":306.0},{"date":"2026-02-19","type":"Virtual Ride","dist":15.02,"min":45.2,"watts":82.0,"hr":129.0,"maxhr":147.0,"effort":25.0,"spd":19.9,"cal":212.0},{"date":"2026-02-21","type":"Virtual Ride","dist":70.11,"min":192.7,"watts":85.0,"hr":118.0,"maxhr":140.0,"effort":55.0,"spd":21.8,"cal":935.0},{"date":"2026-02-23","type":"Swim","dist":0.33,"min":16.8,"watts":null,"hr":103.0,"maxhr":120.0,"effort":3.0,"spd":1.2,"cal":147.0},{"date":"2026-02-24","type":"Swim","dist":1.01,"min":45.3,"watts":null,"hr":105.0,"maxhr":134.0,"effort":13.0,"spd":1.3,"cal":386.0},{"date":"2026-02-28","type":"Swim","dist":1.27,"min":60.3,"watts":null,"hr":117.0,"maxhr":142.0,"effort":27.0,"spd":1.3,"cal":606.0},{"date":"2026-03-12","type":"Swim","dist":1.05,"min":22.0,"watts":null,"hr":112.0,"maxhr":132.0,"effort":12.0,"spd":2.9,"cal":292.0},{"date":"2026-03-14","type":"Run","dist":1.5,"min":17.8,"watts":104.0,"hr":113.0,"maxhr":149.0,"effort":4.0,"spd":5.1,"cal":173.0},{"date":"2026-03-15","type":"Run","dist":2.04,"min":24.8,"watts":184.0,"hr":127.0,"maxhr":150.0,"effort":12.0,"spd":4.9,"cal":305.0},{"date":"2026-03-17","type":"Virtual Run","dist":2.57,"min":25.4,"watts":null,"hr":128.0,"maxhr":159.0,"effort":15.0,"spd":6.1,"cal":197.0}];
+// IS_LIVE, WELLNESS, ACTS declared globally in script 0
+ACTS = [{"date":"2025-11-16","type":"Ride","dist":12.52,"min":54.1,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":13.9,"cal":276.0},{"date":"2025-11-23","type":"Ride","dist":20.16,"min":71.3,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":17.0,"cal":null},{"date":"2025-11-29","type":"Ride","dist":28.19,"min":93.1,"watts":null,"hr":null,"maxhr":null,"effort":null,"spd":18.2,"cal":null},{"date":"2025-12-13","type":"Ride","dist":9.13,"min":29.4,"watts":69.0,"hr":132.0,"maxhr":160.0,"effort":19.0,"spd":18.6,"cal":388.0},{"date":"2025-12-14","type":"Ride","dist":38.39,"min":138.6,"watts":51.0,"hr":135.0,"maxhr":155.0,"effort":131.0,"spd":16.6,"cal":476.0},{"date":"2025-12-15","type":"Swim","dist":0.5,"min":11.5,"watts":null,"hr":127.0,"maxhr":157.0,"effort":18.0,"spd":2.6,"cal":170.0},{"date":"2025-12-20","type":"Ride","dist":22.09,"min":81.2,"watts":75.0,"hr":138.0,"maxhr":175.0,"effort":87.0,"spd":16.3,"cal":1210.0},{"date":"2025-12-22","type":"Ride","dist":44.26,"min":154.7,"watts":73.0,"hr":144.0,"maxhr":168.0,"effort":218.0,"spd":17.2,"cal":2465.0},{"date":"2025-12-27","type":"Ride","dist":14.23,"min":44.0,"watts":74.0,"hr":140.0,"maxhr":160.0,"effort":50.0,"spd":19.4,"cal":676.0},{"date":"2025-12-28","type":"Ride","dist":22.25,"min":74.5,"watts":75.0,"hr":135.0,"maxhr":152.0,"effort":71.0,"spd":17.9,"cal":1073.0},{"date":"2026-01-10","type":"Virtual Ride","dist":24.64,"min":84.6,"watts":91.0,"hr":144.0,"maxhr":162.0,"effort":118.0,"spd":17.5,"cal":440.0},{"date":"2026-01-11","type":"Virtual Ride","dist":22.12,"min":58.8,"watts":95.0,"hr":131.0,"maxhr":155.0,"effort":38.0,"spd":22.6,"cal":318.0},{"date":"2026-01-13","type":"Virtual Ride","dist":10.91,"min":30.0,"watts":97.0,"hr":128.0,"maxhr":162.0,"effort":16.0,"spd":21.8,"cal":166.0},{"date":"2026-01-14","type":"Virtual Ride","dist":19.79,"min":65.5,"watts":109.0,"hr":151.0,"maxhr":176.0,"effort":123.0,"spd":18.1,"cal":409.0},{"date":"2026-01-16","type":"Virtual Ride","dist":11.49,"min":34.1,"watts":93.0,"hr":146.0,"maxhr":165.0,"effort":51.0,"spd":20.2,"cal":182.0},{"date":"2026-01-17","type":"Virtual Ride","dist":23.89,"min":65.6,"watts":121.0,"hr":152.0,"maxhr":171.0,"effort":129.0,"spd":21.8,"cal":455.0},{"date":"2026-01-18","type":"Swim","dist":0.45,"min":10.2,"watts":null,"hr":130.0,"maxhr":169.0,"effort":29.0,"spd":2.6,"cal":166.0},{"date":"2026-01-19","type":"Virtual Ride","dist":18.55,"min":50.2,"watts":84.0,"hr":123.0,"maxhr":135.0,"effort":17.0,"spd":22.2,"cal":241.0},{"date":"2026-01-22","type":"Swim","dist":0.5,"min":10.9,"watts":null,"hr":107.0,"maxhr":138.0,"effort":8.0,"spd":2.8,"cal":173.0},{"date":"2026-01-23","type":"Virtual Ride","dist":12.75,"min":36.7,"watts":83.0,"hr":124.0,"maxhr":135.0,"effort":13.0,"spd":20.8,"cal":174.0},{"date":"2026-01-24","type":"Virtual Ride","dist":24.31,"min":64.2,"watts":112.0,"hr":139.0,"maxhr":166.0,"effort":67.0,"spd":22.7,"cal":412.0},{"date":"2026-01-25","type":"Virtual Ride","dist":25.03,"min":81.1,"watts":72.0,"hr":135.0,"maxhr":155.0,"effort":67.0,"spd":18.5,"cal":333.0},{"date":"2026-01-26","type":"Virtual Ride","dist":19.9,"min":59.5,"watts":70.0,"hr":144.0,"maxhr":155.0,"effort":86.0,"spd":20.1,"cal":240.0},{"date":"2026-01-30","type":"Virtual Ride","dist":14.17,"min":56.0,"watts":76.0,"hr":118.0,"maxhr":136.0,"effort":14.0,"spd":15.2,"cal":244.0},{"date":"2026-01-31","type":"Virtual Ride","dist":18.82,"min":54.3,"watts":79.0,"hr":122.0,"maxhr":143.0,"effort":18.0,"spd":20.8,"cal":246.0},{"date":"2026-01-31","type":"Virtual Ride","dist":19.52,"min":68.8,"watts":86.0,"hr":133.0,"maxhr":150.0,"effort":49.0,"spd":17.0,"cal":337.0},{"date":"2026-02-14","type":"Virtual Ride","dist":15.85,"min":40.9,"watts":107.0,"hr":134.0,"maxhr":160.0,"effort":37.0,"spd":23.2,"cal":249.0},{"date":"2026-02-14","type":"Swim","dist":1.3,"min":26.2,"watts":null,"hr":118.0,"maxhr":158.0,"effort":29.0,"spd":3.0,"cal":417.0},{"date":"2026-02-15","type":"Virtual Ride","dist":17.17,"min":46.1,"watts":141.0,"hr":150.0,"maxhr":168.0,"effort":82.0,"spd":22.3,"cal":373.0},{"date":"2026-02-18","type":"Virtual Ride","dist":21.82,"min":60.5,"watts":88.0,"hr":123.0,"maxhr":160.0,"effort":20.0,"spd":21.6,"cal":306.0},{"date":"2026-02-19","type":"Virtual Ride","dist":15.02,"min":45.2,"watts":82.0,"hr":129.0,"maxhr":147.0,"effort":25.0,"spd":19.9,"cal":212.0},{"date":"2026-02-21","type":"Virtual Ride","dist":70.11,"min":192.7,"watts":85.0,"hr":118.0,"maxhr":140.0,"effort":55.0,"spd":21.8,"cal":935.0},{"date":"2026-02-23","type":"Swim","dist":0.33,"min":16.8,"watts":null,"hr":103.0,"maxhr":120.0,"effort":3.0,"spd":1.2,"cal":147.0},{"date":"2026-02-24","type":"Swim","dist":1.01,"min":45.3,"watts":null,"hr":105.0,"maxhr":134.0,"effort":13.0,"spd":1.3,"cal":386.0},{"date":"2026-02-28","type":"Swim","dist":1.27,"min":60.3,"watts":null,"hr":117.0,"maxhr":142.0,"effort":27.0,"spd":1.3,"cal":606.0},{"date":"2026-03-12","type":"Swim","dist":1.05,"min":22.0,"watts":null,"hr":112.0,"maxhr":132.0,"effort":12.0,"spd":2.9,"cal":292.0},{"date":"2026-03-14","type":"Run","dist":1.5,"min":17.8,"watts":104.0,"hr":113.0,"maxhr":149.0,"effort":4.0,"spd":5.1,"cal":173.0},{"date":"2026-03-15","type":"Run","dist":2.04,"min":24.8,"watts":184.0,"hr":127.0,"maxhr":150.0,"effort":12.0,"spd":4.9,"cal":305.0},{"date":"2026-03-17","type":"Virtual Run","dist":2.57,"min":25.4,"watts":null,"hr":128.0,"maxhr":159.0,"effort":15.0,"spd":6.1,"cal":197.0}];
 
 // Wellness data from intervals.icu (CTL/ATL/TSB) - populated on connect
-let WELLNESS = null;
-let IS_LIVE = false;
+// WELLNESS declared globally above
+// IS_LIVE declared globally above
 
 function toggleSettings() {
   const p = document.getElementById('settings-panel');
-  const btn = document.getElementById('settings-btn');
   const showing = p.style.display !== 'none';
   p.style.display = showing ? 'none' : 'block';
-  btn.textContent = showing ? 'Connect intervals.icu' : 'Hide settings';
   if (!showing) {
     const saved = getSaved();
     if (saved.athleteId) document.getElementById('inp-athlete').value = saved.athleteId;
     if (saved.apiKey) document.getElementById('inp-apikey').value = saved.apiKey;
   }
 }
+
+// Close panel if clicking outside
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('settings-panel');
+  const btn = document.getElementById('settings-btn');
+  if (panel && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.style.display = 'none';
+  }
+});
 
 function getSaved() {
   try { return JSON.parse(localStorage.getItem('icu_creds') || '{}'); } catch(e) { return {}; }
@@ -615,7 +1174,7 @@ async function connectAndFetch() {
         watts: a.average_watts || null,
         hr:    a.average_heartrate || null,
         maxhr: a.max_heartrate || null,
-        effort: a.icu_relative_effort || null,
+        effort: a.icu_relative_effort || a.training_load || null,
         spd:   a.average_speed ? +(a.average_speed*3.6).toFixed(1) : 0,
         cal:   a.calories || null
       }));
@@ -633,12 +1192,26 @@ async function connectAndFetch() {
     IS_LIVE = true;
 
     // Update UI
-    document.getElementById('dash-status').textContent = `Live · intervals.icu · ${ACTS.length} activities · updated ${newest}`;
+    // Update status text
+    const todayFmt = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('dash-status').textContent = `${ACTS.length} activities · last updated ${todayFmt}`;
     document.getElementById('dash-status').style.color = '#3db89a';
-    document.getElementById('settings-btn').textContent = 'Connected ✓';
+    // Update floating button
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('settings-btn-label').textContent = '✓ intervals.icu';
+    document.getElementById('last-refresh').textContent = timeStr;
+    document.getElementById('conn-dot').style.background = '#3db89a';
+    document.getElementById('settings-btn').style.borderColor = 'rgba(14,124,101,0.4)';
+    document.getElementById('settings-btn').style.color = '#3db89a';
     document.getElementById('settings-panel').style.display = 'none';
 
-    // Refresh current dashboard
+    // Full refresh after connect
+    renderBlockNav();
+    renderWeekNav();
+    renderWeek();
+    renderVerdict();
+    renderStatus();
     const activeTab = document.querySelector('#dash-nav .blk-btn.active');
     if (activeTab) activeTab.click();
 
@@ -657,6 +1230,7 @@ window.addEventListener('load', () => {
     document.getElementById('inp-apikey').value = saved.apiKey;
     document.getElementById('settings-panel').style.display = 'block';
     document.getElementById('dash-status').textContent = 'Saved credentials found — reconnecting...';
+    document.getElementById('settings-btn-label').textContent = 'Connecting...';
     connectAndFetch();
   }
 });
@@ -760,7 +1334,7 @@ function dashOverview() {
   const fd = getFitnessData();
   const curCtl = fd.ctl[fd.ctl.length-1];
   const curTsb = fd.tsb[fd.tsb.length-1];
-  const recent = [...ACTS].filter(isTraining).sort((a,b)=>b.date>a.date?1:-1).slice(0,8);
+  const recent = [...ACTS].filter(isTraining).sort((a,b)=>a.date<b.date?1:-1).slice(0,10);
   const liveTag = IS_LIVE ? '<span class="live-badge">live</span>' : '';
 
   document.getElementById('dash-content').innerHTML = `
@@ -807,7 +1381,7 @@ function dashOverview() {
 function dashFitness() {
   const fd = getFitnessData();
   const curCtl = fd.ctl[fd.ctl.length-1], curAtl = fd.atl[fd.atl.length-1], curTsb = fd.tsb[fd.tsb.length-1];
-  const liveNote = IS_LIVE ? '<strong>Live data from intervals.icu.</strong> CTL, ATL and TSB are intervals.icu own calculations.' : '<strong>Estimated data</strong> (not connected to intervals.icu). Connect above for accurate values from intervals.icu.';
+  const liveNote = IS_LIVE ? '<strong>Live data.</strong> CTL, ATL and TSB are calculated by intervals.icu.' : '<strong>Estimated data.</strong> Connect for accurate CTL/ATL/TSB values.';
 
   document.getElementById('dash-content').innerHTML = `
   <style>${dashStyle}</style>
@@ -860,7 +1434,7 @@ function dashPower() {
   </div>
   <div class="sec">HR zone distribution</div>
   <div class="ch" style="height:160px;"><canvas id="hrDistChart"></canvas></div>
-  <div class="note"><strong>Estimated FTP ~105–115W</strong> based on sustained efforts. The 20 min test in W4 (Apr 12) will confirm. Connect intervals.icu for accurate FTP and power zones.</div>`;
+  <div class="note"><strong>Estimated FTP ~105–115W</strong> based on sustained efforts. The 20 min test in W4 (Apr 12) will confirm your baseline.</div>`;
 
   const hrS = [...hrSessions].sort((a,b)=>a.date>b.date?1:-1);
   destroyChart('wattChart');
